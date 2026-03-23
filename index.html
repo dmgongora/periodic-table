@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | Full Dynamic Legend</title>
+    <title>The Stories of Matter | Phase & Temperature</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -14,108 +13,75 @@
             --accent: #3b82f6;
         }
 
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
-            background: var(--bg); color: var(--text);
-            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
-        }
-
-        header { text-align: center; margin-bottom: 25px; }
-        header h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; }
-
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
         .dashboard {
-            background: var(--card-bg); padding: 20px; border-radius: 16px;
-            margin-bottom: 30px; display: flex; flex-direction: column; gap: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 1100px;
+            background: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 25px;
+            width: 100%; max-width: 1100px; border: 1px solid rgba(255,255,255,0.1);
         }
 
         .controls-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
         .btn-group { display: flex; background: #0f172a; padding: 4px; border-radius: 10px; }
-        button { 
-            background: transparent; color: #94a3b8; border: none; padding: 8px 16px; 
-            cursor: pointer; transition: 0.2s; font-size: 0.85rem; font-weight: 600; border-radius: 7px;
-        }
+        button { background: transparent; color: #94a3b8; border: none; padding: 8px 16px; cursor: pointer; font-size: 0.8rem; font-weight: 600; border-radius: 7px; }
         button.active { background: var(--accent); color: white; }
 
-        .timeline-box { display: flex; align-items: center; gap: 12px; background: #0f172a; padding: 8px 16px; border-radius: 10px; }
-        
-        /* LEGEND STYLING */
-        #legend-container {
-            display: flex; gap: 12px; justify-content: center; align-items: center;
-            min-height: 40px; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap;
-        }
+        .slider-box { display: none; align-items: center; gap: 12px; background: #0f172a; padding: 8px 16px; border-radius: 10px; min-width: 250px; }
+        .slider-box.active { display: flex; }
 
-        .leg-item { 
-            display: none; 
-            align-items: center; gap: 6px; font-size: 0.75rem;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            opacity: 0; transform: translateY(5px);
-        }
+        /* LEGEND */
+        #legend-container { display: flex; gap: 12px; justify-content: center; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap; margin-top: 15px; }
+        .leg-item { display: none; align-items: center; gap: 6px; font-size: 0.75rem; transition: 0.3s opacity; }
+        .leg-item.visible { display: flex; opacity: 1; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; }
 
-        .leg-item.visible { display: flex; opacity: 1; transform: translateY(0); }
-        .dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
-        
-        #abundance-legend { display: none; align-items: center; gap: 15px; }
-        #abundance-legend.visible { display: flex; opacity: 1; transform: translateY(0); }
-        #abundance-gradient { width: 150px; height: 10px; border-radius: 5px; background: linear-gradient(to right, #1e293b, #3b82f6, #fde047); }
-
-        /* PERIODIC TABLE GRID */
-        #pt-container { display: grid; grid-template-columns: repeat(18, var(--cell-size)); grid-template-rows: repeat(10, var(--cell-size)); gap: var(--gap); }
-
-        .element {
-            width: var(--cell-size); height: var(--cell-size); background: #334155; 
-            position: relative; display: flex; flex-direction: column; justify-content: center; 
-            align-items: center; transition: all 0.4s ease; cursor: pointer;
-        }
+        /* GRID */
+        #pt-container { display: grid; grid-template-columns: repeat(18, var(--cell-size)); gap: var(--gap); }
+        .element { width: var(--cell-size); height: var(--cell-size); background: #334155; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.4s all; cursor: pointer; border-radius: 2px; }
         .element .num { position: absolute; top: 2px; left: 4px; font-size: 0.6rem; opacity: 0.6; }
-        .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none;}
-        .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; pointer-events: none;}
+        .element .sym { font-weight: 800; font-size: 1.1rem; }
+        .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; }
 
-        /* National Colors */
-        .c-UK { background: #2563eb; } .c-USA { background: #8b5cf6; } 
-        .c-Germany { background: #f59e0b; color: #000; } .c-Sweden { background: #eab308; color: #000; } 
-        .c-France { background: #ef4444; } .c-Russia { background: #10b981; }
-        .c-Ancient { background: #64748b; } .c-India { background: #f97316; } 
-        .c-Japan { background: #be185d; } .c-Denmark { background: #06b6d4; } 
-        .c-Austria { background: #d946ef; } .c-Spain { background: #ea580c; }
-        .c-Finland { background: #6366f1; } .c-Switzerland { background: #a1a1aa; } 
-        .c-Mexico { background: #16a34a; } .c-Italy { background: #0ea5e9; }
-
-        .view-gender .g-male { background: #1e40af; }
-        .view-gender .g-female { background: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.5); z-index: 2; }
-        .view-gender .g-team { background: #14b8a6; }
-        .view-gender .g-ancient { background: #475569; }
+        /* PHASE COLORS */
+        .state-solid { border-left: 4px solid #94a3b8; }
+        .state-liquid { border-left: 4px solid #3b82f6; background: #1d4ed8 !important; }
+        .state-gas { border-left: 4px solid #f59e0b; background: #78350f !important; opacity: 0.8; }
+        .state-unknown { border-left: 4px solid #444; }
 
         .future-element { opacity: 0.05 !important; filter: grayscale(1); pointer-events: none; }
-        #tooltip { position: fixed; background: #fff; color: #000; padding: 12px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 20px 25px rgba(0,0,0,0.5); width: 220px; font-size: 0.8rem; }
+        #tooltip { position: fixed; background: #fff; color: #000; padding: 12px; border-radius: 8px; display: none; z-index: 1000; width: 220px; font-size: 0.8rem; }
     </style>
 </head>
 <body class="view-nation">
 
-<header>
-    <h1>The Stories of Matter</h1>
-</header>
-
 <div class="dashboard">
     <div class="controls-row">
         <div class="btn-group">
-            <button id="btn-nation" class="active" onclick="changeView('nation')">Discovery Nation</button>
-            <button id="btn-gender" onclick="changeView('gender')">Gender / Team</button>
-            <button id="btn-abundance" onclick="changeView('abundance')">Earth Abundance</button>
+            <button id="btn-nation" class="active" onclick="setView('nation')">Nation</button>
+            <button id="btn-gender" onclick="setView('gender')">Gender</button>
+            <button id="btn-abundance" onclick="setView('abundance')">Abundance</button>
+            <button id="btn-phase" onclick="setView('phase')">Phase (Temp)</button>
         </div>
-        <div class="timeline-box">
-            <span style="font-size:0.8rem; font-weight:700;">Year: <span id="year-label" style="color:var(--accent)">2024</span></span>
-            <input type="range" id="year-range" min="1200" max="2024" value="2024" style="width:140px" oninput="updateTimeline(this.value)">
+
+        <!-- Dynamic Sliders -->
+        <div id="box-year" class="slider-box active">
+            <span style="font-size:0.8rem; font-weight:700;">Year: <span id="label-year">2024</span></span>
+            <input type="range" id="range-year" min="1200" max="2024" value="2024" oninput="updateYear(this.value)">
+        </div>
+
+        <div id="box-temp" class="slider-box">
+            <span style="font-size:0.8rem; font-weight:700;">Temp: <span id="label-temp">293</span>K</span>
+            <input type="range" id="range-temp" min="0" max="6000" value="293" oninput="updateTemp(this.value)">
         </div>
     </div>
     
     <div id="legend-container">
-        <!-- JS will populate these blocks once -->
-        <div id="nation-legend-items" style="display:contents"></div>
-        <div id="gender-legend-items" style="display:contents"></div>
-        <div id="abundance-legend" class="leg-item">
-            <span>Rare (Trace)</span><div id="abundance-gradient"></div><span>Abundant (Si/O)</span>
+        <!-- JS builds these once -->
+        <div id="nation-legend" style="display:contents"></div>
+        <div id="gender-legend" style="display:contents"></div>
+        <div id="phase-legend" style="display:contents">
+            <div class="leg-item leg-phase" id="leg-p-solid"><div class="dot" style="background:#94a3b8"></div>Solid</div>
+            <div class="leg-item leg-phase" id="leg-p-liquid"><div class="dot" style="background:#3b82f6"></div>Liquid</div>
+            <div class="leg-item leg-phase" id="leg-p-gas"><div class="dot" style="background:#f59e0b"></div>Gas</div>
         </div>
     </div>
 </div>
@@ -127,46 +93,27 @@
     let elements = [];
     let currentView = 'nation';
     let currentYear = 2024;
+    let currentTemp = 293;
 
-    // Comprehensive Color Map
-    const nationColors = { 
-        "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", 
-        "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", 
-        "Japan":"#be185d", "Denmark":"#06b6d4", "Austria":"#d946ef", "Spain":"#ea580c",
-        "Finland":"#6366f1", "Switzerland":"#a1a1aa", "Mexico":"#16a34a", "Italy":"#0ea5e9"
-    };
-    
-    const genderLabels = { "male": "Male Discoverer", "female": "Female Discoverer", "team": "Research Team", "ancient": "Pre-History" };
+    const nationColors = { "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", "Japan":"#be185d" };
     const genderColors = { "male": "#1e40af", "female": "#ec4899", "team": "#14b8a6", "ancient": "#475569" };
 
     async function loadData() {
-        try {
-            const response = await fetch('./data.json');
-            elements = await response.json();
-            setupLegends();
-            renderTable();
-            refreshUI();
-        } catch (e) { console.error("Could not load data.json", e); }
+        const response = await fetch('./data.json');
+        elements = await response.json();
+        setupLegends();
+        renderTable();
+        refreshUI();
     }
 
-    // CREATE EVERY POSSIBLE LEGEND ITEM ONCE
     function setupLegends() {
-        const nBox = document.getElementById('nation-legend-items');
-        Object.entries(nationColors).forEach(([nation, color]) => {
-            const div = document.createElement('div');
-            div.className = 'leg-item leg-nation-node';
-            div.id = `leg-nation-${nation}`;
-            div.innerHTML = `<div class="dot" style="background:${color}"></div>${nation}`;
-            nBox.appendChild(div);
+        const nBox = document.getElementById('nation-legend');
+        Object.entries(nationColors).forEach(([n, c]) => {
+            nBox.innerHTML += `<div class="leg-item leg-n" id="leg-n-${n}"><div class="dot" style="background:${c}"></div>${n}</div>`;
         });
-
-        const gBox = document.getElementById('gender-legend-items');
-        Object.entries(genderLabels).forEach(([key, label]) => {
-            const div = document.createElement('div');
-            div.className = 'leg-item leg-gender-node';
-            div.id = `leg-gender-${key}`;
-            div.innerHTML = `<div class="dot" style="background:${genderColors[key]}"></div>${label}`;
-            gBox.appendChild(div);
+        const gBox = document.getElementById('gender-legend');
+        Object.entries(genderColors).forEach(([g, c]) => {
+            gBox.innerHTML += `<div class="leg-item leg-g" id="leg-g-${g}"><div class="dot" style="background:${c}"></div>${g}</div>`;
         });
     }
 
@@ -176,79 +123,66 @@
             const div = document.createElement('div');
             div.className = `element c-${el.nation} g-${el.gender}`;
             div.id = `el-${el.number}`;
-            div.style.gridColumn = el.x;
-            div.style.gridRow = el.y;
+            div.style.gridColumn = el.x; div.style.gridRow = el.y;
             div.innerHTML = `<span class="num">${el.number}</span><span class="sym">${el.symbol}</span><span class="name">${el.name}</span>`;
             
             div.onmouseover = (e) => {
                 const tt = document.getElementById('tooltip');
                 tt.style.display = 'block';
-                tt.innerHTML = `<b>${el.name}</b> (${el.symbol})<br>Nation: ${el.nation}<br>Year: ${el.year < 0 ? 'Ancient' : el.year}<br>By: ${el.discoverer}`;
+                tt.innerHTML = `<b>${el.name}</b><br>Melt: ${el.melting}K | Boil: ${el.boiling}K<br>Discoverer: ${el.discoverer}`;
             };
-            div.onmousemove = (e) => {
-                const tt = document.getElementById('tooltip');
-                tt.style.left = (e.clientX + 15) + 'px';
-                tt.style.top = (e.clientY + 15) + 'px';
-            };
+            div.onmousemove = (e) => { tooltip.style.left = (e.clientX + 15) + 'px'; tooltip.style.top = (e.clientY + 15) + 'px'; };
             div.onmouseout = () => document.getElementById('tooltip').style.display = 'none';
             container.appendChild(div);
         });
     }
 
-    function changeView(view) {
+    function setView(view) {
         currentView = view;
         document.body.className = `view-${view}`;
         document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${view}`).classList.add('active');
+
+        // Swap Sliders
+        document.getElementById('box-year').classList.toggle('active', view !== 'phase');
+        document.getElementById('box-temp').classList.toggle('active', view === 'phase');
+        
         refreshUI();
     }
 
-    function updateTimeline(year) {
-        currentYear = year;
-        document.getElementById('year-label').innerText = year;
-        refreshUI();
-    }
+    function updateYear(y) { currentYear = y; document.getElementById('label-year').innerText = y; refreshUI(); }
+    function updateTemp(t) { currentTemp = t; document.getElementById('label-temp').innerText = t; refreshUI(); }
 
     function refreshUI() {
         const activeNations = new Set();
         const activeGenders = new Set();
+        const activePhases = new Set();
 
         elements.forEach(el => {
             const domEl = document.getElementById(`el-${el.number}`);
             const isVisible = el.year <= currentYear;
-            
-            if (!isVisible) {
-                domEl.classList.add('future-element');
-            } else {
-                domEl.classList.remove('future-element');
+            domEl.classList.toggle('future-element', !isVisible);
+
+            if (isVisible) {
                 activeNations.add(el.nation);
                 activeGenders.add(el.gender);
+
+                // Phase Logic
+                domEl.classList.remove('state-solid', 'state-liquid', 'state-gas');
+                if (currentView === 'phase') {
+                    let phase = 'solid';
+                    if (currentTemp >= el.boiling) phase = 'gas';
+                    else if (currentTemp >= el.melting) phase = 'liquid';
+                    domEl.classList.add(`state-${phase}`);
+                    activePhases.add(phase);
+                }
             }
-
-            if (currentView === 'abundance') {
-                const logVal = el.abundance > 0 ? Math.log10(el.abundance) : -5;
-                const norm = (logVal + 5) / 11;
-                domEl.style.backgroundColor = `hsl(210, 100%, ${isVisible ? (15 + norm * 75) : 10}%)`;
-                domEl.style.color = (isVisible && (15 + norm * 75) > 60) ? '#000' : '#fff';
-            } else {
-                domEl.style.backgroundColor = ''; domEl.style.color = '';
-            }
         });
 
-        // REVEAL LEGEND ITEMS BASED ON ACTIVE DATA
-        document.querySelectorAll('.leg-nation-node').forEach(node => {
-            const nationName = node.id.replace('leg-nation-', '');
-            const isActive = currentView === 'nation' && activeNations.has(nationName);
-            node.classList.toggle('visible', isActive);
-        });
-
-        document.querySelectorAll('.leg-gender-node').forEach(node => {
-            const genderKey = node.id.replace('leg-gender-', '');
-            const isActive = currentView === 'gender' && activeGenders.has(genderKey);
-            node.classList.toggle('visible', isActive);
-        });
-
-        document.getElementById('abundance-legend').classList.toggle('visible', currentView === 'abundance');
+        // Legend Visibility
+        document.querySelectorAll('.leg-n').forEach(l => l.classList.toggle('visible', currentView === 'nation' && activeNations.has(l.id.replace('leg-n-', ''))));
+        document.querySelectorAll('.leg-g').forEach(l => l.classList.toggle('visible', currentView === 'gender' && activeGenders.has(l.id.replace('leg-g-', ''))));
+        document.querySelectorAll('.leg-phase').forEach(l => l.classList.toggle('visible', currentView === 'phase' && activePhases.has(l.id.replace('leg-p-', ''))));
     }
 
     loadData();
