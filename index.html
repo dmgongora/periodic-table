@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | Professional Edition</title>
+    <title>The Stories of Matter | Chronological Edition</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -22,12 +22,13 @@
             border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 1100px;
         }
 
-        .controls-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+        .controls-row { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: center; }
         .btn-group { display: flex; background: #0f172a; padding: 4px; border-radius: 10px; }
         button { background: transparent; color: #94a3b8; border: none; padding: 8px 16px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; font-weight: 600; border-radius: 7px; }
         button.active { background: var(--accent); color: white; }
 
-        .slider-box { display: flex; align-items: center; gap: 12px; background: #0f172a; padding: 8px 16px; border-radius: 10px; min-width: 320px; }
+        .slider-box { display: flex; align-items: center; gap: 10px; background: #0f172a; padding: 8px 14px; border-radius: 10px; min-width: 260px; transition: 0.3s; }
+        .slider-box.hidden { opacity: 0; pointer-events: none; width: 0; min-width: 0; padding: 0; margin: 0; overflow: hidden; }
         
         #legend-container { display: flex; gap: 12px; justify-content: center; align-items: center; min-height: 40px; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap; }
         .leg-item { display: none; align-items: center; gap: 6px; font-size: 0.75rem; transition: opacity 0.4s ease, transform 0.4s ease; opacity: 0; transform: translateY(5px); }
@@ -40,13 +41,13 @@
         .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none; }
         .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; pointer-events: none; }
 
-        /* Thermal State Colors */
+        /* States */
         .state-solid { background: #475569 !important; color: white !important; }
         .state-liquid { background: #10b981 !important; color: white !important; }
         .state-gas { background: #f59e0b !important; color: black !important; }
         .state-unknown { background: #1e293b !important; border: 1px dashed #444 !important; opacity: 0.4; }
 
-        /* Discovery Nation Colors */
+        /* Discovery Colors */
         .c-UK { background: #2563eb; color: white; } .c-USA { background: #8b5cf6; color: white; } 
         .c-Germany { background: #f59e0b; color: black; } .c-Sweden { background: #eab308; color: black; } 
         .c-France { background: #ef4444; color: white; } .c-Russia { background: #10b981; color: white; }
@@ -64,8 +65,6 @@
         .future-element { opacity: 0.05 !important; filter: grayscale(1) blur(1px); pointer-events: none; }
         
         #tooltip { position: fixed; background: #fff; color: #000; padding: 12px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 20px 25px rgba(0,0,0,0.5); width: 220px; font-size: 0.8rem; pointer-events: none; }
-        #tooltip hr { border: 0; border-top: 1px solid #eee; margin: 8px 0; }
-        #tooltip b { color: var(--accent); }
     </style>
 </head>
 <body class="view-nation">
@@ -74,19 +73,25 @@
     <div class="controls-row">
         <div class="btn-group">
             <button id="btn-nation" class="active" onclick="changeView('nation')">Nation</button>
-            <button id="btn-gender" onclick="changeView('gender')">Gender/Team</button>
+            <button id="btn-gender" onclick="changeView('gender')">Gender</button>
             <button id="btn-abundance" onclick="changeView('abundance')">Abundance</button>
             <button id="btn-state" onclick="changeView('state')">Thermal State</button>
         </div>
         
-        <div class="slider-box">
-            <span id="slider-label-text" style="font-size:0.8rem; font-weight:700; min-width:160px;">Year: <span id="val-display" style="color:var(--accent)">2024</span></span>
-            <input type="range" id="main-slider" min="1200" max="2024" value="2024" style="flex-grow:1" oninput="handleSlider(this.value)">
+        <!-- Always Visible History Slider -->
+        <div class="slider-box" id="box-year">
+            <span style="font-size:0.75rem; font-weight:700; min-width:85px;">Year: <span id="year-display" style="color:var(--accent)">2024</span></span>
+            <input type="range" id="year-slider" min="1200" max="2024" value="2024" oninput="updateYear(this.value)">
+        </div>
+
+        <!-- Temperature Slider (Visible only in Thermal State) -->
+        <div class="slider-box hidden" id="box-temp">
+            <span style="font-size:0.75rem; font-weight:700; min-width:115px;">Temp: <span id="temp-display" style="color:var(--accent)">293 K</span></span>
+            <input type="range" id="temp-slider" min="0" max="6000" value="293" oninput="updateTemp(this.value)">
         </div>
     </div>
     
     <div id="legend-container">
-        <!-- Legend items will be pre-populated alphabetically -->
         <div id="nation-legend" style="display:contents"></div>
         <div id="gender-legend" style="display:contents"></div>
         <div id="state-legend" style="display:contents">
@@ -96,7 +101,7 @@
              <div id="leg-state-unknown" class="leg-item"><div class="dot" style="border:1px dashed #444; background:#1e293b"></div>Unknown</div>
         </div>
         <div id="abundance-legend" class="leg-item">
-            <span>Rare (Trace)</span><div style="width:100px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Common (O/Si)</span>
+            <span>Rare</span><div style="width:80px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Common</span>
         </div>
     </div>
 </div>
@@ -110,7 +115,7 @@
     let currentYear = 2024;
     let currentTemp = 293;
 
-    const nationColors = { "Ancient":"#64748b", "Austria":"#d946ef", "Denmark":"#06b6d4", "Finland":"#6366f1", "France":"#ef4444", "Germany":"#f59e0b", "India":"#f97316", "Italy":"#0ea5e9", "Japan":"#be185d", "Mexico":"#16a34a", "Russia":"#10b981", "Spain":"#ea580c", "Sweden":"#eab308", "Switzerland":"#a1a1aa", "UK":"#2563eb", "USA":"#8b5cf6" };
+    const nationColors = { "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", "Japan":"#be185d", "Denmark":"#06b6d4", "Austria":"#d946ef", "Spain":"#ea580c", "Finland":"#6366f1", "Switzerland":"#a1a1aa", "Mexico":"#16a34a", "Italy":"#0ea5e9" };
     const genderLabels = { "ancient": "Pre-History", "female": "Female Discoverer", "male": "Male Discoverer", "team": "Research Team" };
     const genderColors = { "ancient": "#475569", "female": "#ec4899", "male": "#1e40af", "team": "#14b8a6" };
 
@@ -123,8 +128,17 @@
     }
 
     function setupLegends() {
+        // Calculate min discovery years for chronological sorting
+        const nationMinYears = {};
+        const genderMinYears = {};
+
+        elements.forEach(el => {
+            if (!nationMinYears[el.nation] || el.year < nationMinYears[el.nation]) nationMinYears[el.nation] = el.year;
+            if (!genderMinYears[el.gender] || el.year < genderMinYears[el.gender]) genderMinYears[el.gender] = el.year;
+        });
+
         const nBox = document.getElementById('nation-legend');
-        Object.keys(nationColors).sort().forEach(n => {
+        Object.keys(nationColors).sort((a,b) => (nationMinYears[a] || 9999) - (nationMinYears[b] || 9999)).forEach(n => {
             const div = document.createElement('div');
             div.className = 'leg-item leg-n';
             div.id = `leg-n-${n}`;
@@ -133,7 +147,7 @@
         });
 
         const gBox = document.getElementById('gender-legend');
-        Object.keys(genderLabels).sort().forEach(g => {
+        Object.keys(genderLabels).sort((a,b) => (genderMinYears[a] || 9999) - (genderMinYears[b] || 9999)).forEach(g => {
             const div = document.createElement('div');
             div.className = 'leg-item leg-g';
             div.id = `leg-g-${g}`;
@@ -151,12 +165,8 @@
             div.style.gridColumn = el.x;
             div.style.gridRow = el.y;
             div.innerHTML = `<span class="num">${el.number}</span><span class="sym">${el.symbol}</span><span class="name">${el.name}</span>`;
-            
             div.onmouseover = (e) => showTooltip(el, e);
-            div.onmousemove = (e) => {
-                tooltip.style.left = (e.clientX + 15) + 'px';
-                tooltip.style.top = (e.clientY + 15) + 'px';
-            };
+            div.onmousemove = (e) => { tooltip.style.left = (e.clientX + 15) + 'px'; tooltip.style.top = (e.clientY + 15) + 'px'; };
             div.onmouseout = () => tooltip.style.display = 'none';
             container.appendChild(div);
         });
@@ -166,19 +176,16 @@
         const tt = document.getElementById('tooltip');
         tt.style.display = 'block';
         let content = `<div style="font-weight:800; font-size:1rem;">${el.name} (${el.symbol})</div><hr>`;
-        
-        if (currentView === 'nation') {
+        if (currentView === 'nation' || currentView === 'gender') {
             content += `Nation: <b>${el.nation}</b><br>Discoverer: <b>${el.discoverer}</b><br>Year: <b>${el.year < 0 ? 'Ancient' : el.year}</b>`;
-        } else if (currentView === 'gender') {
-            content += `Category: <b>${genderLabels[el.gender]}</b><br>Discoverer: <b>${el.discoverer}</b>`;
         } else if (currentView === 'abundance') {
             content += `Abundance: <b>${el.abundance} ppm</b><br><small>Relative to Earth's Crust</small>`;
         } else if (currentView === 'state') {
             const state = getState(el);
             content += `State at ${currentTemp}K: <b style="text-transform:uppercase">${state}</b><hr>`;
-            content += `Melting Point: <b>${el.melting || 'Unknown'} K</b><br>Boiling Point: <b>${el.boiling || 'Unknown'} K</b>`;
+            content += `Melting Point: <b>${el.melting || 'Unknown'} K</b><br>Boiling Point: <b>${el.boiling || 'Unknown'} K</b><br>`;
+            content += `<small>Historical Status: ${el.year <= currentYear ? 'Discovered' : 'Not yet known'}</small>`;
         }
-        
         tt.innerHTML = content;
     }
 
@@ -192,35 +199,23 @@
     function changeView(view) {
         currentView = view;
         document.body.className = `view-${view}`;
-        const slider = document.getElementById('main-slider');
-        
-        if (view === 'state') {
-            slider.min = 0; slider.max = 6000; slider.value = currentTemp;
-            updateSliderLabel(currentTemp);
-        } else {
-            slider.min = 1200; slider.max = 2024; slider.value = currentYear;
-            document.getElementById('slider-label-text').innerHTML = `Year: <span id="val-display" style="color:var(--accent)">${currentYear}</span>`;
-        }
-
+        document.getElementById('box-temp').classList.toggle('hidden', view !== 'state');
         document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${view}`).classList.add('active');
         refreshUI();
     }
 
-    function handleSlider(val) {
-        if (currentView === 'state') {
-            currentTemp = parseInt(val);
-            updateSliderLabel(val);
-        } else {
-            currentYear = parseInt(val);
-            document.getElementById('val-display').innerText = val;
-        }
+    function updateYear(val) {
+        currentYear = parseInt(val);
+        document.getElementById('year-display').innerText = val;
         refreshUI();
     }
 
-    function updateSliderLabel(kVal) {
-        const cVal = (kVal - 273.15).toFixed(0);
-        document.getElementById('slider-label-text').innerHTML = `Temp: <span id="val-display" style="color:var(--accent)">${kVal} K (${cVal} °C)</span>`;
+    function updateTemp(val) {
+        currentTemp = parseInt(val);
+        const cVal = (currentTemp - 273.15).toFixed(0);
+        document.getElementById('temp-display').innerText = `${val} K (${cVal} °C)`;
+        refreshUI();
     }
 
     function refreshUI() {
@@ -233,18 +228,16 @@
             const isVisible = el.year <= currentYear;
             domEl.classList.toggle('future-element', !isVisible);
 
-            // Clean previous states
             domEl.classList.remove('state-solid', 'state-liquid', 'state-gas', 'state-unknown');
             domEl.style.backgroundColor = ''; domEl.style.color = '';
 
             if (isVisible) {
                 presentNations.add(el.nation);
                 presentGenders.add(el.gender);
-                
                 if (currentView === 'state') {
-                    const state = getState(el);
-                    domEl.classList.add('state-' + state);
-                    presentStates.add(state);
+                    const s = getState(el);
+                    domEl.classList.add('state-' + s);
+                    presentStates.add(s);
                 } else if (currentView === 'abundance') {
                     const logVal = el.abundance > 0 ? Math.log10(el.abundance) : -5;
                     const norm = (logVal + 5) / 11;
@@ -255,15 +248,9 @@
             }
         });
 
-        // Toggle Legend Visibility based on board presence
         document.querySelectorAll('.leg-n').forEach(n => n.classList.toggle('visible', currentView === 'nation' && presentNations.has(n.id.replace('leg-n-',''))));
         document.querySelectorAll('.leg-g').forEach(n => n.classList.toggle('visible', currentView === 'gender' && presentGenders.has(n.id.replace('leg-g-',''))));
-        
-        document.getElementById('leg-state-solid').classList.toggle('visible', currentView === 'state' && presentStates.has('solid'));
-        document.getElementById('leg-state-liquid').classList.toggle('visible', currentView === 'state' && presentStates.has('liquid'));
-        document.getElementById('leg-state-gas').classList.toggle('visible', currentView === 'state' && presentStates.has('gas'));
-        document.getElementById('leg-state-unknown').classList.toggle('visible', currentView === 'state' && presentStates.has('unknown'));
-        
+        document.querySelectorAll('#state-legend .leg-item').forEach(n => n.classList.toggle('visible', currentView === 'state' && presentStates.has(n.id.replace('leg-state-',''))));
         document.getElementById('abundance-legend').classList.toggle('visible', currentView === 'abundance');
     }
 
