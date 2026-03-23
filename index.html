@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | Smooth Dynamic Legends</title>
+    <title>The Stories of Matter | Full Dynamic Legend</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -21,7 +21,7 @@
         }
 
         header { text-align: center; margin-bottom: 25px; }
-        header h1 { margin: 0; font-size: 2rem; font-weight: 800; }
+        header h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; }
 
         .dashboard {
             background: var(--card-bg); padding: 20px; border-radius: 16px;
@@ -47,40 +47,40 @@
         }
 
         .leg-item { 
-            display: none; /* Hidden by default */
+            display: none; 
             align-items: center; gap: 6px; font-size: 0.75rem;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.4s ease, transform 0.4s ease;
             opacity: 0; transform: translateY(5px);
         }
 
-        .leg-item.visible { 
-            display: flex; 
-            opacity: 1; transform: translateY(0); 
-        }
-
+        .leg-item.visible { display: flex; opacity: 1; transform: translateY(0); }
         .dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+        
         #abundance-legend { display: none; align-items: center; gap: 15px; }
-        #abundance-legend.visible { display: flex; }
+        #abundance-legend.visible { display: flex; opacity: 1; transform: translateY(0); }
         #abundance-gradient { width: 150px; height: 10px; border-radius: 5px; background: linear-gradient(to right, #1e293b, #3b82f6, #fde047); }
 
-        /* TABLE STYLING */
+        /* PERIODIC TABLE GRID */
         #pt-container { display: grid; grid-template-columns: repeat(18, var(--cell-size)); grid-template-rows: repeat(10, var(--cell-size)); gap: var(--gap); }
+
         .element {
             width: var(--cell-size); height: var(--cell-size); background: #334155; 
             position: relative; display: flex; flex-direction: column; justify-content: center; 
             align-items: center; transition: all 0.4s ease; cursor: pointer;
         }
         .element .num { position: absolute; top: 2px; left: 4px; font-size: 0.6rem; opacity: 0.6; }
-        .element .sym { font-weight: 800; font-size: 1.1rem; }
-        .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; }
+        .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none;}
+        .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; pointer-events: none;}
 
-        /* Perspective Colors */
-        .c-UK { background: #2563eb; } .c-USA { background: #8b5cf6; } .c-Germany { background: #f59e0b; color: #000; }
-        .c-Sweden { background: #eab308; color: #000; } .c-France { background: #ef4444; } .c-Russia { background: #10b981; }
-        .c-Ancient { background: #64748b; } .c-India { background: #f97316; } .c-Japan { background: #f43f5e; }
-        .c-Denmark { background: #06b6d4; } .c-Austria { background: #ec4899; } .c-Spain { background: #ea580c; }
-        .c-Finland { background: #6366f1; } .c-Switzerland { background: #94a3b8; } .c-Mexico { background: #16a34a; }
-        .c-Italy { background: #0ea5e9; }
+        /* National Colors */
+        .c-UK { background: #2563eb; } .c-USA { background: #8b5cf6; } 
+        .c-Germany { background: #f59e0b; color: #000; } .c-Sweden { background: #eab308; color: #000; } 
+        .c-France { background: #ef4444; } .c-Russia { background: #10b981; }
+        .c-Ancient { background: #64748b; } .c-India { background: #f97316; } 
+        .c-Japan { background: #be185d; } .c-Denmark { background: #06b6d4; } 
+        .c-Austria { background: #d946ef; } .c-Spain { background: #ea580c; }
+        .c-Finland { background: #6366f1; } .c-Switzerland { background: #a1a1aa; } 
+        .c-Mexico { background: #16a34a; } .c-Italy { background: #0ea5e9; }
 
         .view-gender .g-male { background: #1e40af; }
         .view-gender .g-female { background: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.5); z-index: 2; }
@@ -100,24 +100,22 @@
 <div class="dashboard">
     <div class="controls-row">
         <div class="btn-group">
-            <button id="btn-nation" class="active" onclick="changeView('nation')">Nation</button>
+            <button id="btn-nation" class="active" onclick="changeView('nation')">Discovery Nation</button>
             <button id="btn-gender" onclick="changeView('gender')">Gender / Team</button>
-            <button id="btn-abundance" onclick="changeView('abundance')">Abundance</button>
+            <button id="btn-abundance" onclick="changeView('abundance')">Earth Abundance</button>
         </div>
         <div class="timeline-box">
             <span style="font-size:0.8rem; font-weight:700;">Year: <span id="year-label" style="color:var(--accent)">2024</span></span>
             <input type="range" id="year-range" min="1200" max="2024" value="2024" style="width:140px" oninput="updateTimeline(this.value)">
         </div>
     </div>
-    <!-- Pre-rendered legend areas -->
+    
     <div id="legend-container">
-        <!-- Generated Nations -->
-        <div id="nation-items" style="display:contents"></div>
-        <!-- Generated Genders -->
-        <div id="gender-items" style="display:contents"></div>
-        <!-- Abundance Bar -->
+        <!-- JS will populate these blocks once -->
+        <div id="nation-legend-items" style="display:contents"></div>
+        <div id="gender-legend-items" style="display:contents"></div>
         <div id="abundance-legend" class="leg-item">
-            <span>Rare</span><div id="abundance-gradient"></div><span>Abundant</span>
+            <span>Rare (Trace)</span><div id="abundance-gradient"></div><span>Abundant (Si/O)</span>
         </div>
     </div>
 </div>
@@ -130,40 +128,44 @@
     let currentView = 'nation';
     let currentYear = 2024;
 
+    // Comprehensive Color Map
     const nationColors = { 
         "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", 
         "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", 
-        "Japan":"#f43f5e", "Denmark":"#06b6d4", "Austria":"#ec4899", "Spain":"#ea580c",
-        "Finland":"#6366f1", "Switzerland":"#94a3b8", "Mexico":"#16a34a", "Italy":"#0ea5e9"
+        "Japan":"#be185d", "Denmark":"#06b6d4", "Austria":"#d946ef", "Spain":"#ea580c",
+        "Finland":"#6366f1", "Switzerland":"#a1a1aa", "Mexico":"#16a34a", "Italy":"#0ea5e9"
     };
-    const genderLabels = { "male": "Individual Male", "female": "Individual Female", "team": "Research Team", "ancient": "Pre-History" };
+    
+    const genderLabels = { "male": "Male Discoverer", "female": "Female Discoverer", "team": "Research Team", "ancient": "Pre-History" };
     const genderColors = { "male": "#1e40af", "female": "#ec4899", "team": "#14b8a6", "ancient": "#475569" };
 
     async function loadData() {
-        const response = await fetch('./data.json');
-        elements = await response.json();
-        setupLegends();
-        renderTable();
-        refreshUI();
+        try {
+            const response = await fetch('./data.json');
+            elements = await response.json();
+            setupLegends();
+            renderTable();
+            refreshUI();
+        } catch (e) { console.error("Could not load data.json", e); }
     }
 
-    // CREATE LEGEND DOM ONCE
+    // CREATE EVERY POSSIBLE LEGEND ITEM ONCE
     function setupLegends() {
-        const nBox = document.getElementById('nation-items');
-        Object.entries(nationColors).forEach(([n, color]) => {
+        const nBox = document.getElementById('nation-legend-items');
+        Object.entries(nationColors).forEach(([nation, color]) => {
             const div = document.createElement('div');
-            div.className = 'leg-item leg-nation';
-            div.id = `leg-n-${n}`;
-            div.innerHTML = `<div class="dot" style="background:${color}"></div>${n}`;
+            div.className = 'leg-item leg-nation-node';
+            div.id = `leg-nation-${nation}`;
+            div.innerHTML = `<div class="dot" style="background:${color}"></div>${nation}`;
             nBox.appendChild(div);
         });
 
-        const gBox = document.getElementById('gender-items');
-        Object.entries(genderLabels).forEach(([g, label]) => {
+        const gBox = document.getElementById('gender-legend-items');
+        Object.entries(genderLabels).forEach(([key, label]) => {
             const div = document.createElement('div');
-            div.className = 'leg-item leg-gender';
-            div.id = `leg-g-${g}`;
-            div.innerHTML = `<div class="dot" style="background:${genderColors[g]}"></div>${label}`;
+            div.className = 'leg-item leg-gender-node';
+            div.id = `leg-gender-${key}`;
+            div.innerHTML = `<div class="dot" style="background:${genderColors[key]}"></div>${label}`;
             gBox.appendChild(div);
         });
     }
@@ -181,13 +183,14 @@
             div.onmouseover = (e) => {
                 const tt = document.getElementById('tooltip');
                 tt.style.display = 'block';
-                tt.innerHTML = `<b>${el.name}</b> (${el.symbol})<br>Nation: ${el.nation}<br>Year: ${el.year < 0 ? 'Ancient' : el.year}<br>Discoverer: ${el.discoverer}`;
+                tt.innerHTML = `<b>${el.name}</b> (${el.symbol})<br>Nation: ${el.nation}<br>Year: ${el.year < 0 ? 'Ancient' : el.year}<br>By: ${el.discoverer}`;
             };
             div.onmousemove = (e) => {
-                tooltip.style.left = (e.clientX + 15) + 'px';
-                tooltip.style.top = (e.clientY + 15) + 'px';
+                const tt = document.getElementById('tooltip');
+                tt.style.left = (e.clientX + 15) + 'px';
+                tt.style.top = (e.clientY + 15) + 'px';
             };
-            div.onmouseout = () => tooltip.style.display = 'none';
+            div.onmouseout = () => document.getElementById('tooltip').style.display = 'none';
             container.appendChild(div);
         });
     }
@@ -206,7 +209,6 @@
         refreshUI();
     }
 
-    // REFRESH UI WITHOUT REDRAWING LEGEND DOM
     function refreshUI() {
         const activeNations = new Set();
         const activeGenders = new Set();
@@ -233,17 +235,17 @@
             }
         });
 
-        // Toggle legend visibility classes only
-        document.querySelectorAll('.leg-nation').forEach(el => {
-            const nation = el.id.replace('leg-n-', '');
-            const shouldShow = currentView === 'nation' && activeNations.has(nation);
-            el.classList.toggle('visible', shouldShow);
+        // REVEAL LEGEND ITEMS BASED ON ACTIVE DATA
+        document.querySelectorAll('.leg-nation-node').forEach(node => {
+            const nationName = node.id.replace('leg-nation-', '');
+            const isActive = currentView === 'nation' && activeNations.has(nationName);
+            node.classList.toggle('visible', isActive);
         });
 
-        document.querySelectorAll('.leg-gender').forEach(el => {
-            const gender = el.id.replace('leg-g-', '');
-            const shouldShow = currentView === 'gender' && activeGenders.has(gender);
-            el.classList.toggle('visible', shouldShow);
+        document.querySelectorAll('.leg-gender-node').forEach(node => {
+            const genderKey = node.id.replace('leg-gender-', '');
+            const isActive = currentView === 'gender' && activeGenders.has(genderKey);
+            node.classList.toggle('visible', isActive);
         });
 
         document.getElementById('abundance-legend').classList.toggle('visible', currentView === 'abundance');
