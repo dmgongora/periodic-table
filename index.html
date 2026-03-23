@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Stories of Matter: Complete 118 Table</title>
+    <style>
+        :root {
+            --cell-size: clamp(30px, 4.8vw, 62px);
+            --gap: 3px;
+            --bg: #0f172a;
+            --text: #f1f5f9;
+        }
+
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: var(--bg); color: var(--text);
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+
+        .dashboard {
+            background: #1e293b; padding: 20px; border-radius: 16px;
+            margin-bottom: 25px; display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 1200px;
+        }
+
+        .controls-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+        
+        .btn-group { display: flex; background: #0f172a; padding: 4px; border-radius: 10px; }
+        button { 
+            background: transparent; color: #94a3b8; border: none; padding: 8px 16px; 
+            cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-weight: 600; border-radius: 7px;
+        }
+        button.active { background: #3b82f6; color: white; }
+
+        #legend-container {
+            display: flex; gap: 15px; justify-content: center; align-items: center;
+            min-height: 25px; font-size: 0.75rem; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap;
+        }
+        .leg-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; }
+
+        #pt-container {
+            display: grid;
+            grid-template-columns: repeat(18, var(--cell-size));
+            grid-template-rows: repeat(10, var(--cell-size));
+            gap: var(--gap);
+        }
+
+        .element {
+            width: var(--cell-size); height: var(--cell-size);
+            background: #334155; position: relative; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .element .num { position: absolute; top: 2px; left: 4px; font-size: 0.6rem; opacity: 0.6; }
+        .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none;}
+        .element .name { font-size: 0.4rem; text-transform: uppercase; opacity: 0.7; pointer-events: none; text-align: center; width: 90%; overflow: hidden;}
+
+        /* VIEW: Discovery Nation Colors */
+        .view-nation .c-UK { background: #2563eb; }
+        .view-nation .c-USA { background: #8b5cf6; }
+        .view-nation .c-Germany { background: #f59e0b; color: #000; }
+        .view-nation .c-Sweden { background: #eab308; color: #000; }
+        .view-nation .c-France { background: #ef4444; }
+        .view-nation .c-Russia { background: #10b981; }
+        .view-nation .c-Ancient { background: #64748b; }
+        .view-nation .c-Japan { background: #f43f5e; }
+        .view-nation .c-Other { background: #475569; }
+
+        /* VIEW: Gender Colors */
+        .view-gender .g-male { background: #1e40af; }
+        .view-gender .g-female { background: #ec4899; box-shadow: 0 0 12px #ec4899; z-index: 5; }
+        .view-gender .g-team { background: #14b8a6; }
+        .view-gender .g-ancient { background: #475569; }
+
+        #tooltip {
+            position: fixed; background: #fff; color: #000; padding: 12px; 
+            border-radius: 8px; pointer-events: none; display: none; z-index: 100;
+            box-shadow: 0 20px 25px rgba(0,0,0,0.5); width: 220px; font-size: 0.8rem;
+        }
+
+        #abundance-gradient {
+            width: 150px; height: 10px; border-radius: 5px;
+            background: linear-gradient(to right, #1e293b, #3b82f6, #fde047);
+        }
+    </style>
+</head>
+<body class="view-nation">
+
+<div class="dashboard">
+    <div class="controls-row">
+        <div class="btn-group">
+            <button id="btn-nation" class="active" onclick="setView('nation')">Discovery Nation</button>
+            <button id="btn-gender" onclick="setView('gender')">Gender / Team</button>
+            <button id="btn-abundance" onclick="setView('abundance')">Earth Abundance</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:0.8rem; font-weight:600;">Timeline: <span id="year-label" style="color:#3b82f6">2024</span></span>
+            <input type="range" id="year-range" min="1650" max="2024" value="2024" style="width:140px" oninput="updateYear(this.value)">
+        </div>
+    </div>
+    <div id="legend-container"></div>
+</div>
+
+<div id="pt-container"></div>
+<div id="tooltip"></div>
+
+<script>
+/**
+ * DATASET: [Atomic#, Sym, Name, X, Y, Nation, Year, Gender, Discoverer, Abundance_ppm]
+ * Based on historical records of element discovery.
+ */
+const eData = [
+    [1,"H","Hydrogen",1,1,"UK",1766,"male","Henry Cavendish",1400],[2,"He","Helium",18,1,"UK",1868,"male","Janssen & Lockyer",0.008],
+    [3,"Li","Lithium",1,2,"Sweden",1817,"male","Johan Arfwedson",20],[4,"Be","Beryllium",2,2,"France",1798,"male","Louis Vauquelin",2.8],
+    [5,"B","Boron",13,2,"France",1808,"male","Gay-Lussac & Thénard",10],[6,"C","Carbon",14,2,"Ancient",-5000,"ancient","Unknown",200],
+    [7,"N","Nitrogen",15,2,"UK",1772,"male","Daniel Rutherford",19],[8,"O","Oxygen",16,2,"UK",1774,"male","Priestley & Scheele",461000],
+    [9,"F","Fluorine",17,2,"France",1886,"male","Henri Moissan",585],[10,"Ne","Neon",18,2,"UK",1898,"male","Ramsay & Travers",0.005],
+    [11,"Na","Sodium",1,3,"UK",1807,"male","Humphry Davy",23600],[12,"Mg","Magnesium",2,3,"UK",1755,"male","Joseph Black",23300],
+    [13,"Al","Aluminum",13,3,"Denmark",1825,"male","Hans Ørsted",82300],[14,"Si","Silicon",14,3,"Sweden",1824,"male","Jöns Berzelius",282000],
+    [15,"P","Phosphorus",15,3,"Germany",1669,"male","Hennig Brand",1050],[16,"S","Sulfur",16,3,"Ancient",-2000,"ancient","Unknown",350],
+    [17,"Cl","Chlorine",17,3,"Sweden",1774,"male","Carl Scheele",145],[18,"Ar","Argon",18,3,"UK",1894,"male","Rayleigh & Ramsay",3.5],
+    [19,"K","Potassium",1,4,"UK",1807,"male","Humphry Davy",20900],[20,"Ca","Calcium",2,4,"UK",1808,"male","Humphry Davy",41500],
+    [21,"Sc","Scandium",3,4,"Sweden",1879,"male","Lars Nilson",22],[22,"Ti","Titanium",4,4,"UK",1791,"male","William Gregor",5650],
+    [23,"V","Vanadium",5,4,"Mexico",1801,"male","Andrés del Río",120],[24,"Cr","Chromium",6,4,"France",1797,"male","Louis Vauquelin",102],
+    [25,"Mn","Manganese",7,4,"Sweden",1774,"male","Johan Gahn",950],[26,"Fe","Iron",8,4,"Ancient",-3000,"ancient","Unknown",56300],
+    [27,"Co","Cobalt",9,4,"Sweden",1735,"male","Georg Brandt",25],[28,"Ni","Nickel",10,4,"Sweden",1751,"male","Axel Cronstedt",84],
+    [29,"Cu","Copper",11,4,"Ancient",-8000,"ancient","Unknown",60],[30,"Zn","Zinc",12,4,"India",1300,"male","Indian Alchemists",70],
+    [31,"Ga","Gallium",13,4,"France",1875,"male","Lecoq de Boisbaudran",19],[32,"Ge","Germanium",14,4,"Germany",1886,"male","Clemens Winkler",1.5],
+    [33,"As","Arsenic",15,4,"Ancient",1250,"male","Albertus Magnus",1.8],[34,"Se","Selenium",16,4,"Sweden",1817,"male","Berzelius & Gahn",0.05],
+    [35,"Br","Bromine",17,4,"France",1826,"male","Balard & Löwig",2.4],[36,"Kr","Krypton",18,4,"UK",1898,"male","Ramsay & Travers",0.0001],
+    [37,"Rb","Rubidium",1,5,"Germany",1861,"male","Bunsen & Kirchhoff",90],[38,"Sr","Strontium",2,5,"UK",1787,"male","Adair Crawford",370],
+    [39,"Y","Yttrium",3,5,"Finland",1794,"male","Johan Gadolin",33],[40,"Zr","Zirconium",4,5,"Germany",1789,"male","Martin Klaproth",165],
+    [41,"Nb","Niobium",5,5,"UK",1801,"male","Charles Hatchett",20],[42,"Mo","Molybdenum",6,5,"Sweden",1778,"male","Carl Scheele",1.2],
+    [43,"Tc","Technetium",7,5,"Italy",1937,"male","Perrier & Segrè",0],[44,"Ru","Ruthenium",8,5,"Russia",1844,"male","Karl Klaus",0.001],
+    [45,"Rh","Rhodium",9,5,"UK",1803,"male","William Wollaston",0.001],[46,"Pd","Palladium",10,5,"UK",1803,"male","William Wollaston",0.015],
+    [47,"Ag","Silver",11,5,"Ancient",-3000,"ancient","Unknown",0.075],[48,"Cd","Cadmium",12,5,"Germany",1817,"male","Stromeyer & Hermann",0.15],
+    [49,"In","Indium",13,5,"Germany",1863,"male","Reich & Richter",0.25],[50,"Sn","Tin",14,5,"Ancient",-3000,"ancient","Unknown",2.3],
+    [51,"Sb","Antimony",15,5,"Ancient",-1600,"ancient","Unknown",0.2],[52,"Te","Tellurium",16,5,"Austria",1782,"male","Franz-Joseph Müller",0.001],
+    [53,"I","Iodine",17,5,"France",1811,"male","Bernard Courtois",0.45],[54,"Xe","Xenon",18,5,"UK",1898,"male","Ramsay & Travers",0.00003],
+    [55,"Cs","Cesium",1,6,"Germany",1860,"male","Bunsen & Kirchhoff",3],[56,"Ba","Barium",2,6,"UK",1808,"male","Humphry Davy",425],
+    [57,"La","Lanthanum",4,9,"Sweden",1839,"male","Carl Mosander",39],[58,"Ce","Cerium",5,9,"Sweden",1803,"male","Berzelius & Hisinger",66],
+    [59,"Pr","Praseodymium",6,9,"Austria",1885,"male","Carl von Welsbach",9],[60,"Nd","Neodymium",7,9,"Austria",1885,"male","Carl von Welsbach",41],
+    [61,"Pm","Promethium",8,9,"USA",1945,"team","Oak Ridge Lab",0],[62,"Sm","Samarium",9,9,"France",1879,"male","Lecoq de Boisbaudran",7],
+    [63,"Eu","Europium",10,9,"France",1901,"male","Eugène-Anatole Demarçay",2],[64,"Gd","Gadolinium",11,9,"Switzerland",1880,"male","Jean de Marignac",6],
+    [65,"Tb","Terbium",12,9,"Sweden",1843,"male","Carl Mosander",1],[66,"Dy","Dysprosium",13,9,"France",1886,"male","Lecoq de Boisbaudran",5],
+    [67,"Ho","Holmium",14,9,"Sweden",1878,"male","Marc Delafontaine",1],[68,"Er","Erbium",15,9,"Sweden",1842,"male","Carl Mosander",3],
+    [69,"Tm","Thulium",16,9,"Sweden",1879,"male","Per Teodor Cleve",0.5],[70,"Yb","Ytterbium",17,9,"Switzerland",1878,"male","Jean de Marignac",3],
+    [71,"Lu","Lutetium",18,9,"France",1907,"male","Georges Urbain",0.8],[72,"Hf","Hafnium",4,6,"Denmark",1922,"male","Coster & Hevesy",3],
+    [73,"Ta","Tantalum",5,6,"Sweden",1802,"male","Anders Ekeberg",2],[74,"W","Tungsten",6,6,"Spain",1783,"male","Elhuyar Brothers",1.25],
+    [75,"Re","Rhenium",7,6,"Germany",1925,"female","Ida Noddack",0.0007],[76,"Os","Osmium",8,6,"UK",1803,"male","Smithson Tennant",0.0015],
+    [77,"Ir","Iridium",9,6,"UK",1803,"male","Smithson Tennant",0.001],[78,"Pt","Platinum",10,6,"Spain",1735,"male","Antonio de Ulloa",0.005],
+    [79,"Au","Gold",11,6,"Ancient",-6000,"ancient","Unknown",0.004],[80,"Hg","Mercury",12,6,"Ancient",-1500,"ancient","Unknown",0.085],
+    [81,"Tl","Thallium",13,6,"UK",1861,"male","William Crookes",0.85],[82,"Pb","Lead",14,6,"Ancient",-7000,"ancient","Unknown",14],
+    [83,"Bi","Bismuth",15,6,"Germany",1753,"male","Claude Geoffroy",0.008],[84,"Po","Polonium",16,6,"France",1898,"female","Marie Curie",0],
+    [85,"At","Astatine",17,6,"USA",1940,"male","Dale Corson",0],[86,"Rn","Radon",18,6,"Germany",1900,"male","Friedrich Dorn",0],
+    [87,"Fr","Francium",1,7,"France",1939,"female","Marguerite Perey",0],[88,"Ra","Radium",2,7,"France",1898,"female","Marie & Pierre Curie",0],
+    [89,"Ac","Actinium",4,10,"France",1899,"male","André-Louis Debierne",0],[90,"Th","Thorium",5,10,"Sweden",1828,"male","Jöns Berzelius",9.6],
+    [91,"Pa","Protactinium",6,10,"Germany",1917,"female","Lise Meitner",0],[92,"U","Uranium",7,10,"Germany",1789,"male","Martin Klaproth",2.7],
+    [93,"Np","Neptunium",8,10,"USA",1940,"team","McMillan & Abelson",0],[94,"Pu","Plutonium",9,10,"USA",1940,"team","Seaborg & Wahl",0],
+    [95,"Am","Americium",10,10,"USA",1944,"team","Seaborg et al.",0],[96,"Cm","Curium",11,10,"USA",1944,"team","Seaborg et al.",0],
+    [97,"Bk","Berkelium",12,10,"USA",1949,"team","Thompson et al.",0],[98,"Cf","Californium",13,10,"USA",1950,"team","Thompson et al.",0],
+    [99,"Es","Einsteinium",14,10,"USA",1952,"team","Ghirioso et al.",0],[100,"Fm","Fermium",15,10,"USA",1952,"team","Ghirioso et al.",0],
+    [101,"Md","Mendelevium",16,10,"USA",1955,"team","Ghirioso et al.",0],[102,"No","Nobelium",17,10,"Russia",1966,"team","Dubna Team",0],
+    [103,"Lr","Lawrencium",18,10,"USA",1961,"team","Ghirioso et al.",0],[104,"Rf","Rutherfordium",4,7,"Russia",1964,"team","Dubna Team",0],
+    [105,"Db","Dubnium",5,7,"Russia",1967,"team","Dubna Team",0],[106,"Sg","Seaborgium",6,7,"USA",1974,"team","LBL Team",0],
+    [107,"Bh","Bohrium",7,7,"Germany",1981,"team","GSI Team",0],[108,"Hs","Hassium",8,7,"Germany",1984,"team","GSI Team",0],
+    [109,"Mt","Meitnerium",9,7,"Germany",1982,"team","GSI Team",0],[110,"Ds","Darmstadtium",10,7,"Germany",1994,"team","GSI Team",0],
+    [111,"Rg","Roentgenium",11,7,"Germany",1994,"team","GSI Team",0],[112,"Cn","Copernicium",12,7,"Germany",1996,"team","GSI Team",0],
+    [113,"Nh","Nihonium",13,7,"Japan",2003,"team","RIKEN Team",0],[114,"Fl","Flerovium",14,7,"Russia",1998,"team","JINR Team",0],
+    [115,"Mc","Moscovium",15,7,"Russia",2003,"team","JINR Team",0],[116,"Lv","Livermorium",16,7,"USA",2000,"team","LLNL Team",0],
+    [117,"Ts","Tennessine",17,7,"Russia",2010,"team","JINR Team",0],[118,"Og","Oganesson",18,7,"Russia",2002,"team","Oganessian et al.",0]
+];
+
+const container = document.getElementById('pt-container');
+const tooltip = document.getElementById('tooltip');
+
+function init() {
+    eData.forEach(el => {
+        const div = document.createElement('div');
+        div.className = `element c-${el[5]} g-${el[7]}`;
+        div.id = `el-${el[0]}`;
+        div.style.gridColumn = el[3];
+        div.style.gridRow = el[4];
+        div.setAttribute('data-year', el[6]);
+        div.innerHTML = `<span class="num">${el[0]}</span><span class="sym">${el[1]}</span><span class="name">${el[2]}</span>`;
+        
+        div.onmouseover = (e) => {
+            tooltip.style.display = 'block';
+            tooltip.innerHTML = `
+                <div style="font-weight:bold; font-size:1rem; border-bottom:1px solid #eee; margin-bottom:5px">${el[2]} (${el[1]})</div>
+                <b>By:</b> ${el[8]}<br>
+                <b>Nation:</b> ${el[5]} (${el[6] < 0 ? 'Ancient' : el[6]})<br>
+                <b>Abundance:</b> ${el[9]} ppm
+            `;
+        };
+        div.onmousemove = (e) => {
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+        };
+        div.onmouseout = () => tooltip.style.display = 'none';
+        container.appendChild(div);
+    });
+    updateLegend('nation');
+}
+
+function setView(view) {
+    document.body.className = `view-${view}`;
+    document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-${view}`).classList.add('active');
+
+    eData.forEach(el => {
+        const domEl = document.getElementById(`el-${el[0]}`);
+        if (view === 'abundance') {
+            const ppm = el[9];
+            const logVal = ppm > 0 ? Math.log10(ppm) : -5;
+            const norm = (logVal + 5) / 11; 
+            domEl.style.backgroundColor = `hsl(215, 100%, ${15 + norm * 75}%)`;
+            domEl.style.color = (15 + norm * 75) > 60 ? '#000' : '#fff';
+        } else {
+            domEl.style.backgroundColor = '';
+            domEl.style.color = '';
+        }
+    });
+    updateLegend(view);
+}
+
+function updateLegend(view) {
+    const leg = document.getElementById('legend-container');
+    leg.innerHTML = '';
+    if (view === 'abundance') {
+        leg.innerHTML = `<span>Rare (Trace)</span><div id="abundance-gradient"></div><span>Common (Si/O)</span>`;
+    } else if (view === 'nation') {
+        const nMap = { "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "Japan":"#f43f5e" };
+        Object.entries(nMap).forEach(([k,v]) => leg.innerHTML += `<div class="leg-item"><div class="dot" style="background:${v}"></div>${k}</div>`);
+    } else {
+        const gMap = { "Individual Male":"#1e40af", "Individual Female":"#ec4899", "Modern Team":"#14b8a6", "Ancient":"#475569" };
+        Object.entries(gMap).forEach(([k,v]) => leg.innerHTML += `<div class="leg-item"><div class="dot" style="background:${v}"></div>${k}</div>`);
+    }
+}
+
+function updateYear(y) {
+    document.getElementById('year-label').innerText = y;
+    document.querySelectorAll('.element').forEach(el => {
+        const year = parseInt(el.getAttribute('data-year'));
+        el.style.opacity = (year > y) ? "0.05" : "1";
+    });
+}
+
+init();
+</script>
+</body>
+</html>
