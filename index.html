@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | Abundance Filter</title>
+    <title>The Stories of Matter | Professional Visualization</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -29,7 +29,7 @@
         button.active { background: var(--accent); color: white; }
 
         .slider-box { display: flex; align-items: center; gap: 10px; background: #0f172a; padding: 8px 14px; border-radius: 10px; min-width: 260px; transition: 0.3s; }
-        .slider-box.hidden { opacity: 0; pointer-events: none; width: 0; min-width: 0; padding: 0; margin: 0; overflow: hidden; }
+        .slider-box.hidden { display: none; }
         
         #legend-container { display: flex; gap: 12px; justify-content: center; align-items: center; min-height: 40px; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap; }
         .leg-item { display: none; align-items: center; gap: 6px; font-size: 0.75rem; transition: opacity 0.4s ease, transform 0.4s ease; opacity: 0; transform: translateY(5px); }
@@ -42,36 +42,45 @@
         .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none; }
         .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; pointer-events: none; }
 
-        /* Thermal State Colors */
-        .state-solid { background: #475569 !important; color: white !important; }
-        .state-liquid { background: #10b981 !important; color: white !important; }
-        .state-gas { background: #f59e0b !important; color: black !important; }
-        .state-plasma { background: var(--plasma) !important; color: white !important; box-shadow: 0 0 15px var(--plasma); z-index: 2; }
-        .state-unknown { background: #1e293b !important; border: 1px dashed #444 !important; opacity: 0.4; }
+        /* VIEW: NATION - Scoped Colors */
+        .view-nation .c-UK { background: #2563eb; color: white; }
+        .view-nation .c-USA { background: #8b5cf6; color: white; }
+        .view-nation .c-Germany { background: #f59e0b; color: black; }
+        .view-nation .c-Sweden { background: #eab308; color: black; }
+        .view-nation .c-France { background: #ef4444; color: white; }
+        .view-nation .c-Russia { background: #10b981; color: white; }
+        .view-nation .c-Ancient { background: #64748b; color: white; }
+        .view-nation .c-India { background: #f97316; color: white; }
+        .view-nation .c-Japan { background: #be185d; color: white; }
+        .view-nation .c-Denmark { background: #06b6d4; color: black; }
+        .view-nation .c-Austria { background: #d946ef; color: white; }
+        .view-nation .c-Spain { background: #ea580c; color: white; }
+        .view-nation .c-Finland { background: #6366f1; color: white; }
+        .view-nation .c-Switzerland { background: #a1a1aa; color: black; }
+        .view-nation .c-Mexico { background: #16a34a; color: white; }
+        .view-nation .c-Italy { background: #0ea5e9; color: black; }
 
-        /* Discovery Colors */
-        .c-UK { background: #2563eb; color: white; } .c-USA { background: #8b5cf6; color: white; } 
-        .c-Germany { background: #f59e0b; color: black; } .c-Sweden { background: #eab308; color: black; } 
-        .c-France { background: #ef4444; color: white; } .c-Russia { background: #10b981; color: white; }
-        .c-Ancient { background: #64748b; color: white; } .c-India { background: #f97316; color: white; } 
-        .c-Japan { background: #be185d; color: white; } .c-Denmark { background: #06b6d4; color: black; } 
-        .c-Austria { background: #d946ef; color: white; } .c-Spain { background: #ea580c; color: white; }
-        .c-Finland { background: #6366f1; color: white; } .c-Switzerland { background: #a1a1aa; color: black; } 
-        .c-Mexico { background: #16a34a; color: white; } .c-Italy { background: #0ea5e9; color: black; }
-
+        /* VIEW: GENDER - Scoped Colors */
         .view-gender .g-male { background: #1e40af; color: white; }
         .view-gender .g-female { background: #ec4899; color: white; box-shadow: 0 0 12px rgba(236, 72, 153, 0.5); z-index: 2; }
         .view-gender .g-team { background: #14b8a6; color: white; }
         .view-gender .g-ancient { background: #475569; color: white; }
 
-        /* Filter blur/gray logic */
+        /* VIEW: THERMAL STATE */
+        .view-state .state-solid { background: #475569 !important; color: white !important; }
+        .view-state .state-liquid { background: #10b981 !important; color: white !important; }
+        .view-state .state-gas { background: #f59e0b !important; color: black !important; }
+        .view-state .state-plasma { background: var(--plasma) !important; color: white !important; box-shadow: 0 0 15px var(--plasma); z-index: 2; }
+        .view-state .state-unknown { background: #1e293b !important; border: 1px dashed #444 !important; opacity: 0.4; }
+
         .filtered-out { opacity: 0.05 !important; filter: grayscale(1) blur(1px); pointer-events: none; }
         
-        #tooltip { position: fixed; background: #fff; color: #1e293b; padding: 14px; border-radius: 12px; display: none; z-index: 1000; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 230px; font-size: 0.85rem; pointer-events: none; border: 1px solid #e2e8f0; }
+        /* TOOLTIP */
+        #tooltip { position: fixed; background: #fff; color: #1e293b; padding: 14px; border-radius: 12px; display: none; z-index: 1000; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 240px; font-size: 0.85rem; pointer-events: none; border: 1px solid #e2e8f0; }
         #tooltip .tt-title { font-weight: 800; font-size: 1.1rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; margin-bottom: 10px; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: baseline; }
         #tooltip .tt-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-top: 8px; letter-spacing: 0.05em; }
         #tooltip .tt-value { font-weight: 600; color: #1e293b; }
-        #tooltip .tt-highlight { color: var(--accent); font-weight: 700; }
+        #tooltip b.ion { color: var(--plasma); }
     </style>
 </head>
 <body class="view-nation">
@@ -85,19 +94,16 @@
             <button id="btn-state" onclick="changeView('state')">Thermal State</button>
         </div>
         
-        <!-- Year Slider -->
         <div class="slider-box" id="box-year">
             <span style="font-size:0.75rem; font-weight:700; min-width:85px;">Year: <span id="year-display" style="color:var(--accent)">2024</span></span>
             <input type="range" id="year-slider" min="1200" max="2024" value="2024" oninput="updateYear(this.value)">
         </div>
 
-        <!-- Temperature Slider -->
         <div class="slider-box hidden" id="box-temp">
             <span style="font-size:0.75rem; font-weight:700; min-width:115px;">Temp: <span id="temp-display" style="color:var(--accent)">293 K</span></span>
             <input type="range" id="temp-slider" min="0" max="100000" value="293" oninput="updateTemp(this.value)">
         </div>
 
-        <!-- Abundance Slider (Logarithmic Filter) -->
         <div class="slider-box hidden" id="box-abundance">
             <span style="font-size:0.75rem; font-weight:700; min-width:130px;">Min ppm: <span id="abundance-display" style="color:var(--accent)">0</span></span>
             <input type="range" id="abundance-slider" min="-7" max="6" step="0.1" value="-7" oninput="updateAbundanceFilter(this.value)">
@@ -112,7 +118,6 @@
              <div id="leg-state-liquid" class="leg-item"><div class="dot" style="background:#10b981"></div>Liquid</div>
              <div id="leg-state-gas" class="leg-item"><div class="dot" style="background:#f59e0b"></div>Gas</div>
              <div id="leg-state-plasma" class="leg-item"><div class="dot" style="background:var(--plasma)"></div>Plasma</div>
-             <div id="leg-state-unknown" class="leg-item"><div class="dot" style="border:1px dashed #444; background:#1e293b"></div>Unknown</div>
         </div>
         <div id="abundance-legend" class="leg-item">
             <span>Rare</span><div style="width:80px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Common</span>
@@ -174,7 +179,7 @@
         elements.forEach(el => {
             const div = document.createElement('div');
             div.id = `el-${el.number}`;
-            div.className = 'element';
+            div.className = `element c-${el.nation} g-${el.gender}`;
             div.style.gridColumn = el.x;
             div.style.gridRow = el.y;
             div.innerHTML = `<span class="num">${el.number}</span><span class="sym">${el.symbol}</span><span class="name">${el.name}</span>`;
@@ -192,14 +197,24 @@
     function showTooltip(el, e) {
         const tt = document.getElementById('tooltip');
         tt.style.display = 'block';
-        let content = `<div class="tt-title"><span>${el.name}</span> <span style="font-size:0.8rem; opacity:0.5;">${el.symbol}</span></div>`;
+        let content = `<div class="tt-title"><span>${el.name}</span> <span style="font-size:0.8rem; opacity:0.4;">${el.symbol}</span></div>`;
 
-        if (currentView === 'abundance') {
-            content += `<div class="tt-label">Crustal Abundance</div><div class="tt-value tt-highlight">${el.abundance.toLocaleString()} ppm</div>`;
+        if (currentView === 'nation') {
+            content += `<div class="tt-label">Discoverer</div><div class="tt-value">${el.discoverer}</div>`;
+            content += `<div class="tt-label">Nationality</div><div class="tt-value">${el.nation}</div>`;
+            content += `<div class="tt-label">Year</div><div class="tt-value">${el.year < 0 ? 'Ancient' : el.year}</div>`;
+        } else if (currentView === 'gender') {
+            content += `<div class="tt-label">Discoverer</div><div class="tt-value">${el.discoverer}</div>`;
+            content += `<div class="tt-label">Category</div><div class="tt-value">${genderLabels[el.gender]}</div>`;
+        } else if (currentView === 'abundance') {
+            content += `<div class="tt-label">Abundance</div><div class="tt-value">${el.abundance.toLocaleString()} ppm</div>`;
+            content += `<div class="tt-label">Rarity</div><div class="tt-value">${el.abundance > 1000 ? 'Abundant' : 'Trace'}</div>`;
         } else if (currentView === 'state') {
-            content += `<div class="tt-label">State at ${currentTemp}K</div><div class="tt-value tt-highlight">${getState(el).toUpperCase()}</div>`;
-        } else {
-            content += `<div class="tt-label">Discovery</div><div class="tt-value">Year: ${el.year < 0 ? 'Ancient' : el.year}</div><div class="tt-value">By: ${el.discoverer}</div>`;
+            const state = getState(el);
+            const transition = getTransitionLabel(el);
+            content += `<div class="tt-label">State at ${currentTemp}K</div><div class="tt-value" style="text-transform:uppercase">${state}</div>`;
+            if(transition) content += `<div class="tt-label">Active Transition</div><div class="tt-value"><b>${transition}</b></div>`;
+            content += `<hr><div style="font-size:0.75rem;">Melting: ${el.melting}K | Boiling: ${el.boiling}K</div>`;
         }
         tt.innerHTML = content;
     }
@@ -211,6 +226,15 @@
         if (currentTemp >= el.boiling) return "gas";
         if (currentTemp >= el.melting && !el.sublimes) return "liquid";
         return "solid";
+    }
+
+    function getTransitionLabel(el) {
+        if (!el.melting) return null;
+        const t = parseInt(currentTemp);
+        if (Math.abs(t - el.plasma) < el.plasma * 0.05) return "Ionization";
+        if (Math.abs(t - el.boiling) < el.boiling * 0.02) return el.sublimes ? "Sublimation" : "Vaporization";
+        if (!el.sublimes && Math.abs(t - el.melting) < el.melting * 0.02) return "Melting/Freezing";
+        return null;
     }
 
     function changeView(view) {
@@ -237,11 +261,8 @@
     }
 
     function updateAbundanceFilter(val) {
-        // Logarithmic conversion: 10^val
         minAbundanceThreshold = Math.pow(10, val);
-        let displayVal = minAbundanceThreshold.toFixed(4);
-        if (minAbundanceThreshold >= 1) displayVal = Math.round(minAbundanceThreshold);
-        document.getElementById('abundance-display').innerText = `> ${displayVal} ppm`;
+        document.getElementById('abundance-display').innerText = `> ${minAbundanceThreshold < 1 ? minAbundanceThreshold.toFixed(4) : Math.round(minAbundanceThreshold)} ppm`;
         refreshUI();
     }
 
@@ -252,18 +273,13 @@
 
         elements.forEach(el => {
             const domEl = document.getElementById(`el-${el.number}`);
-            
-            // Compounded Visibility Logic: Year timeline AND Abundance filter (if in abundance view)
-            const yearVisible = el.year <= currentYear;
-            const abundanceVisible = (currentView === 'abundance') ? (el.abundance >= minAbundanceThreshold) : true;
-            
-            const isFullyVisible = yearVisible && abundanceVisible;
-            domEl.classList.toggle('filtered-out', !isFullyVisible);
+            const isVisible = el.year <= currentYear && (currentView !== 'abundance' || el.abundance >= minAbundanceThreshold);
+            domEl.classList.toggle('filtered-out', !isVisible);
 
             domEl.classList.remove('state-solid', 'state-liquid', 'state-gas', 'state-plasma', 'state-unknown');
             domEl.style.backgroundColor = ''; domEl.style.color = '';
 
-            if (isFullyVisible) {
+            if (isVisible) {
                 presentNations.add(el.nation);
                 presentGenders.add(el.gender);
                 if (currentView === 'state') {
@@ -280,7 +296,6 @@
             }
         });
 
-        // Legend toggling remains dynamic based on visible elements
         document.querySelectorAll('.leg-n').forEach(n => n.classList.toggle('visible', currentView === 'nation' && presentNations.has(n.id.replace('leg-n-',''))));
         document.querySelectorAll('.leg-g').forEach(n => n.classList.toggle('visible', currentView === 'gender' && presentGenders.has(n.id.replace('leg-g-',''))));
         document.querySelectorAll('#state-legend .leg-item').forEach(n => n.classList.toggle('visible', currentView === 'state' && presentStates.has(n.id.replace('leg-state-',''))));
