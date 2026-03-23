@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | Dynamic History</title>
+    <title>The Stories of Matter | Smooth Dynamic Legends</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -31,7 +31,6 @@
         }
 
         .controls-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
-        
         .btn-group { display: flex; background: #0f172a; padding: 4px; border-radius: 10px; }
         button { 
             background: transparent; color: #94a3b8; border: none; padding: 8px 16px; 
@@ -41,18 +40,31 @@
 
         .timeline-box { display: flex; align-items: center; gap: 12px; background: #0f172a; padding: 8px 16px; border-radius: 10px; }
         
+        /* LEGEND STYLING */
         #legend-container {
-            display: flex; gap: 15px; justify-content: center; align-items: center;
-            min-height: 35px; font-size: 0.75rem; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap;
+            display: flex; gap: 12px; justify-content: center; align-items: center;
+            min-height: 40px; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap;
         }
-        .leg-item { display: flex; align-items: center; gap: 6px; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .dot { width: 12px; height: 12px; border-radius: 3px; }
+
+        .leg-item { 
+            display: none; /* Hidden by default */
+            align-items: center; gap: 6px; font-size: 0.75rem;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0; transform: translateY(5px);
+        }
+
+        .leg-item.visible { 
+            display: flex; 
+            opacity: 1; transform: translateY(0); 
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+        #abundance-legend { display: none; align-items: center; gap: 15px; }
+        #abundance-legend.visible { display: flex; }
         #abundance-gradient { width: 150px; height: 10px; border-radius: 5px; background: linear-gradient(to right, #1e293b, #3b82f6, #fde047); }
 
+        /* TABLE STYLING */
         #pt-container { display: grid; grid-template-columns: repeat(18, var(--cell-size)); grid-template-rows: repeat(10, var(--cell-size)); gap: var(--gap); }
-
         .element {
             width: var(--cell-size); height: var(--cell-size); background: #334155; 
             position: relative; display: flex; flex-direction: column; justify-content: center; 
@@ -62,25 +74,20 @@
         .element .sym { font-weight: 800; font-size: 1.1rem; }
         .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; }
 
-        /* Perspective Classes */
-        .view-nation .c-UK { background: #2563eb; }
-        .view-nation .c-USA { background: #8b5cf6; }
-        .view-nation .c-Germany { background: #f59e0b; color: #000; }
-        .view-nation .c-Sweden { background: #eab308; color: #000; }
-        .view-nation .c-France { background: #ef4444; }
-        .view-nation .c-Russia { background: #10b981; }
-        .view-nation .c-Ancient { background: #64748b; }
-        .view-nation .c-India { background: #f97316; }
-        .view-nation .c-Japan { background: #f43f5e; }
-        .view-nation .c-Other { background: #475569; }
+        /* Perspective Colors */
+        .c-UK { background: #2563eb; } .c-USA { background: #8b5cf6; } .c-Germany { background: #f59e0b; color: #000; }
+        .c-Sweden { background: #eab308; color: #000; } .c-France { background: #ef4444; } .c-Russia { background: #10b981; }
+        .c-Ancient { background: #64748b; } .c-India { background: #f97316; } .c-Japan { background: #f43f5e; }
+        .c-Denmark { background: #06b6d4; } .c-Austria { background: #ec4899; } .c-Spain { background: #ea580c; }
+        .c-Finland { background: #6366f1; } .c-Switzerland { background: #94a3b8; } .c-Mexico { background: #16a34a; }
+        .c-Italy { background: #0ea5e9; }
 
         .view-gender .g-male { background: #1e40af; }
-        .view-gender .g-female { background: #ec4899; box-shadow: 0 0 15px rgba(236, 72, 153, 0.5); z-index: 2; }
+        .view-gender .g-female { background: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.5); z-index: 2; }
         .view-gender .g-team { background: #14b8a6; }
         .view-gender .g-ancient { background: #475569; }
 
         .future-element { opacity: 0.05 !important; filter: grayscale(1); pointer-events: none; }
-
         #tooltip { position: fixed; background: #fff; color: #000; padding: 12px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 20px 25px rgba(0,0,0,0.5); width: 220px; font-size: 0.8rem; }
     </style>
 </head>
@@ -102,7 +109,17 @@
             <input type="range" id="year-range" min="1200" max="2024" value="2024" style="width:140px" oninput="updateTimeline(this.value)">
         </div>
     </div>
-    <div id="legend-container"></div>
+    <!-- Pre-rendered legend areas -->
+    <div id="legend-container">
+        <!-- Generated Nations -->
+        <div id="nation-items" style="display:contents"></div>
+        <!-- Generated Genders -->
+        <div id="gender-items" style="display:contents"></div>
+        <!-- Abundance Bar -->
+        <div id="abundance-legend" class="leg-item">
+            <span>Rare</span><div id="abundance-gradient"></div><span>Abundant</span>
+        </div>
+    </div>
 </div>
 
 <div id="pt-container"></div>
@@ -113,33 +130,58 @@
     let currentView = 'nation';
     let currentYear = 2024;
 
-    const nationColors = { "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", "Japan":"#f43f5e", "Other":"#475569" };
-    const genderLabels = { "male": "Male Discoverer", "female": "Female Discoverer", "team": "Research Team", "ancient": "Pre-History" };
+    const nationColors = { 
+        "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", 
+        "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", 
+        "Japan":"#f43f5e", "Denmark":"#06b6d4", "Austria":"#ec4899", "Spain":"#ea580c",
+        "Finland":"#6366f1", "Switzerland":"#94a3b8", "Mexico":"#16a34a", "Italy":"#0ea5e9"
+    };
+    const genderLabels = { "male": "Individual Male", "female": "Individual Female", "team": "Research Team", "ancient": "Pre-History" };
     const genderColors = { "male": "#1e40af", "female": "#ec4899", "team": "#14b8a6", "ancient": "#475569" };
 
     async function loadData() {
         const response = await fetch('./data.json');
         elements = await response.json();
+        setupLegends();
         renderTable();
         refreshUI();
+    }
+
+    // CREATE LEGEND DOM ONCE
+    function setupLegends() {
+        const nBox = document.getElementById('nation-items');
+        Object.entries(nationColors).forEach(([n, color]) => {
+            const div = document.createElement('div');
+            div.className = 'leg-item leg-nation';
+            div.id = `leg-n-${n}`;
+            div.innerHTML = `<div class="dot" style="background:${color}"></div>${n}`;
+            nBox.appendChild(div);
+        });
+
+        const gBox = document.getElementById('gender-items');
+        Object.entries(genderLabels).forEach(([g, label]) => {
+            const div = document.createElement('div');
+            div.className = 'leg-item leg-gender';
+            div.id = `leg-g-${g}`;
+            div.innerHTML = `<div class="dot" style="background:${genderColors[g]}"></div>${label}`;
+            gBox.appendChild(div);
+        });
     }
 
     function renderTable() {
         const container = document.getElementById('pt-container');
         elements.forEach(el => {
             const div = document.createElement('div');
-            // Logic to handle nations not in our primary color map
-            const nationClass = nationColors[el.nation] ? el.nation : "Other";
-            div.className = `element c-${nationClass} g-${el.gender}`;
+            div.className = `element c-${el.nation} g-${el.gender}`;
             div.id = `el-${el.number}`;
             div.style.gridColumn = el.x;
             div.style.gridRow = el.y;
             div.innerHTML = `<span class="num">${el.number}</span><span class="sym">${el.symbol}</span><span class="name">${el.name}</span>`;
             
             div.onmouseover = (e) => {
-                const tooltip = document.getElementById('tooltip');
-                tooltip.style.display = 'block';
-                tooltip.innerHTML = `<b>${el.name}</b><br>Nation: ${el.nation}<br>Year: ${el.year < 0 ? 'Ancient' : el.year}<br>By: ${el.discoverer}`;
+                const tt = document.getElementById('tooltip');
+                tt.style.display = 'block';
+                tt.innerHTML = `<b>${el.name}</b> (${el.symbol})<br>Nation: ${el.nation}<br>Year: ${el.year < 0 ? 'Ancient' : el.year}<br>Discoverer: ${el.discoverer}`;
             };
             div.onmousemove = (e) => {
                 tooltip.style.left = (e.clientX + 15) + 'px';
@@ -164,6 +206,7 @@
         refreshUI();
     }
 
+    // REFRESH UI WITHOUT REDRAWING LEGEND DOM
     function refreshUI() {
         const activeNations = new Set();
         const activeGenders = new Set();
@@ -176,11 +219,10 @@
                 domEl.classList.add('future-element');
             } else {
                 domEl.classList.remove('future-element');
-                activeNations.add(nationColors[el.nation] ? el.nation : "Other");
+                activeNations.add(el.nation);
                 activeGenders.add(el.gender);
             }
 
-            // Abundance Heatmap logic (only if active)
             if (currentView === 'abundance') {
                 const logVal = el.abundance > 0 ? Math.log10(el.abundance) : -5;
                 const norm = (logVal + 5) / 11;
@@ -191,25 +233,20 @@
             }
         });
 
-        updateDynamicLegend(activeNations, activeGenders);
-    }
+        // Toggle legend visibility classes only
+        document.querySelectorAll('.leg-nation').forEach(el => {
+            const nation = el.id.replace('leg-n-', '');
+            const shouldShow = currentView === 'nation' && activeNations.has(nation);
+            el.classList.toggle('visible', shouldShow);
+        });
 
-    function updateDynamicLegend(nations, genders) {
-        const leg = document.getElementById('legend-container');
-        leg.innerHTML = '';
+        document.querySelectorAll('.leg-gender').forEach(el => {
+            const gender = el.id.replace('leg-g-', '');
+            const shouldShow = currentView === 'gender' && activeGenders.has(gender);
+            el.classList.toggle('visible', shouldShow);
+        });
 
-        if (currentView === 'abundance') {
-            leg.innerHTML = `<span>Rare</span><div id="abundance-gradient"></div><span>Abundant</span>`;
-        } else if (currentView === 'nation') {
-            // Sort nations so legend order remains somewhat stable
-            Array.from(nations).sort().forEach(n => {
-                leg.innerHTML += `<div class="leg-item"><div class="dot" style="background:${nationColors[n]}"></div>${n}</div>`;
-            });
-        } else if (currentView === 'gender') {
-            Array.from(genders).forEach(g => {
-                leg.innerHTML += `<div class="leg-item"><div class="dot" style="background:${genderColors[g]}"></div>${genderLabels[g]}</div>`;
-            });
-        }
+        document.getElementById('abundance-legend').classList.toggle('visible', currentView === 'abundance');
     }
 
     loadData();
