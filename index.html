@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | States & Transitions</title>
+    <title>The Stories of Matter | Professional Visualization</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -66,8 +66,13 @@
 
         .future-element { opacity: 0.05 !important; filter: grayscale(1) blur(1px); pointer-events: none; }
         
-        #tooltip { position: fixed; background: #fff; color: #000; padding: 12px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 20px 25px rgba(0,0,0,0.5); width: 220px; font-size: 0.8rem; pointer-events: none; }
-        #tooltip b.ion { color: var(--plasma); }
+        /* Dynamic Tooltip Styling */
+        #tooltip { position: fixed; background: #fff; color: #1e293b; padding: 14px; border-radius: 12px; display: none; z-index: 1000; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 230px; font-size: 0.85rem; pointer-events: none; border: 1px solid #e2e8f0; }
+        #tooltip .tt-title { font-weight: 800; font-size: 1.1rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; margin-bottom: 10px; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: baseline; }
+        #tooltip .tt-label { font-size: 0.7rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-top: 8px; letter-spacing: 0.05em; }
+        #tooltip .tt-value { font-weight: 600; color: #1e293b; }
+        #tooltip .tt-highlight { color: var(--accent); font-weight: 700; }
+        #tooltip .tt-plasma { color: var(--plasma); }
     </style>
 </head>
 <body class="view-nation">
@@ -103,7 +108,7 @@
              <div id="leg-state-unknown" class="leg-item"><div class="dot" style="border:1px dashed #444; background:#1e293b"></div>Unknown</div>
         </div>
         <div id="abundance-legend" class="leg-item">
-            <span>Rare</span><div style="width:80px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Common</span>
+            <span>Rare (Trace)</span><div style="width:80px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Common (Si/O)</span>
         </div>
     </div>
 </div>
@@ -166,8 +171,12 @@
             div.style.gridRow = el.y;
             div.innerHTML = `<span class="num">${el.number}</span><span class="sym">${el.symbol}</span><span class="name">${el.name}</span>`;
             div.onmouseover = (e) => showTooltip(el, e);
-            div.onmousemove = (e) => { tooltip.style.left = (e.clientX + 15) + 'px'; tooltip.style.top = (e.clientY + 15) + 'px'; };
-            div.onmouseout = () => tooltip.style.display = 'none';
+            div.onmousemove = (e) => { 
+                const tt = document.getElementById('tooltip');
+                tt.style.left = (e.clientX + 15) + 'px'; 
+                tt.style.top = (e.clientY + 15) + 'px'; 
+            };
+            div.onmouseout = () => document.getElementById('tooltip').style.display = 'none';
             container.appendChild(div);
         });
     }
@@ -175,17 +184,49 @@
     function showTooltip(el, e) {
         const tt = document.getElementById('tooltip');
         tt.style.display = 'block';
-        let content = `<div style="font-weight:800; font-size:1rem;">${el.name} (${el.symbol})</div><hr>`;
         
-        if (currentView === 'state') {
+        // Context-aware Content Building
+        let content = `<div class="tt-title"><span>${el.name}</span> <span style="font-size:0.8rem; opacity:0.5;">${el.symbol}</span></div>`;
+
+        if (currentView === 'nation') {
+            content += `
+                <div class="tt-label">Discovery Story</div>
+                <div class="tt-value">Found in <span class="tt-highlight">${el.year < 0 ? 'Ancient times' : el.year}</span></div>
+                <div class="tt-value">by <span class="tt-highlight">${el.discoverer}</span></div>
+                <div class="tt-label">Primary Nation</div>
+                <div class="tt-value">${el.nation}</div>
+            `;
+        } else if (currentView === 'gender') {
+            content += `
+                <div class="tt-label">Discoverer</div>
+                <div class="tt-value tt-highlight">${el.discoverer}</div>
+                <div class="tt-label">Category</div>
+                <div class="tt-value">${genderLabels[el.gender]}</div>
+            `;
+        } else if (currentView === 'abundance') {
+            const status = el.abundance > 1000 ? "Abundant" : el.abundance > 1 ? "Common" : "Trace Amount";
+            content += `
+                <div class="tt-label">Crustal Abundance</div>
+                <div class="tt-value tt-highlight">${el.abundance.toLocaleString()} ppm</div>
+                <div class="tt-label">Context</div>
+                <div class="tt-value">${status} in Earth's crust</div>
+            `;
+        } else if (currentView === 'state') {
             const state = getState(el);
             const transition = getTransitionLabel(el);
-            content += `Current State: <b style="text-transform:uppercase">${state}</b><br>`;
-            if(transition) content += `Transition: <b class="${state==='plasma'?'ion':''}">${transition}</b><br>`;
-            content += `<hr>Melting: ${el.melting}K | Boiling: ${el.boiling}K<br>Plasma: ~${el.plasma}K`;
-        } else {
-            content += `Nation: <b>${el.nation}</b><br>Discoverer: <b>${el.discoverer}</b><br>Year: <b>${el.year < 0 ? 'Ancient' : el.year}</b>`;
+            content += `
+                <div class="tt-label">Status at ${currentTemp}K</div>
+                <div class="tt-value ${state==='plasma'?'tt-plasma':''} tt-highlight" style="text-transform:uppercase">${state}</div>
+                ${transition ? `<div class="tt-label">Transitioning</div><div class="tt-value">${transition}</div>` : ''}
+                <div class="tt-label">Phase Thresholds</div>
+                <div style="font-size:0.75rem; display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:4px;">
+                    <div>Melting: <span class="tt-value">${el.melting || '?'}K</span></div>
+                    <div>Boiling: <span class="tt-value">${el.boiling || '?'}K</span></div>
+                </div>
+                <div style="font-size:0.75rem; margin-top:4px;">Plasma Point: <span class="tt-value">~${el.plasma}K</span></div>
+            `;
         }
+
         tt.innerHTML = content;
     }
 
@@ -201,10 +242,9 @@
     function getTransitionLabel(el) {
         if (!el.melting) return null;
         const t = parseInt(currentTemp);
-        // Using a 5% margin for "currently transitioning" feel
         if (Math.abs(t - el.plasma) < el.plasma * 0.05) return "Ionization";
         if (Math.abs(t - el.boiling) < el.boiling * 0.02) return el.sublimes ? "Sublimation" : "Vaporization";
-        if (!el.sublimes && Math.abs(t - el.melting) < el.melting * 0.02) return "Melting";
+        if (!el.sublimes && Math.abs(t - el.melting) < el.melting * 0.02) return "Melting/Freezing";
         return null;
     }
 
