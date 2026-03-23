@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Stories of Matter | Thermal & Historical</title>
+    <title>The Stories of Matter | Professional Edition</title>
     <style>
         :root {
             --cell-size: clamp(30px, 4.8vw, 62px);
@@ -30,37 +30,42 @@
         .slider-box { display: flex; align-items: center; gap: 12px; background: #0f172a; padding: 8px 16px; border-radius: 10px; min-width: 320px; }
         
         #legend-container { display: flex; gap: 12px; justify-content: center; align-items: center; min-height: 40px; border-top: 1px solid #334155; padding-top: 15px; flex-wrap: wrap; }
-        .leg-item { display: none; align-items: center; gap: 6px; font-size: 0.75rem; transition: 0.3s ease; opacity: 0; transform: translateY(5px); }
+        .leg-item { display: none; align-items: center; gap: 6px; font-size: 0.75rem; transition: opacity 0.4s ease, transform 0.4s ease; opacity: 0; transform: translateY(5px); }
         .leg-item.visible { display: flex; opacity: 1; transform: translateY(0); }
         .dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
 
         #pt-container { display: grid; grid-template-columns: repeat(18, var(--cell-size)); grid-template-rows: repeat(10, var(--cell-size)); gap: var(--gap); }
-        .element { width: var(--cell-size); height: var(--cell-size); background: #334155; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.4s ease; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
-        .element .num { position: absolute; top: 2px; left: 4px; font-size: 0.6rem; opacity: 0.6; }
-        .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none;}
-        .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; pointer-events: none;}
+        .element { width: var(--cell-size); height: var(--cell-size); background: #334155; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.4s ease; cursor: help; border: 1px solid rgba(255,255,255,0.05); }
+        .element .num { position: absolute; top: 2px; left: 4px; font-size: 0.6rem; opacity: 0.6; pointer-events: none; }
+        .element .sym { font-weight: 800; font-size: 1.1rem; pointer-events: none; }
+        .element .name { font-size: 0.45rem; text-transform: uppercase; opacity: 0.7; text-align: center; pointer-events: none; }
 
-        /* Phase Colors */
-        .state-solid { background: #475569 !important; color: white; }
-        .state-liquid { background: #10b981 !important; color: white; }
-        .state-gas { background: #f59e0b !important; color: black; }
+        /* Thermal State Colors */
+        .state-solid { background: #475569 !important; color: white !important; }
+        .state-liquid { background: #10b981 !important; color: white !important; }
+        .state-gas { background: #f59e0b !important; color: black !important; }
         .state-unknown { background: #1e293b !important; border: 1px dashed #444 !important; opacity: 0.4; }
 
-        /* Discovery Colors */
-        .c-UK { background: #2563eb; } .c-USA { background: #8b5cf6; } .c-Germany { background: #f59e0b; color: #000; }
-        .c-Sweden { background: #eab308; color: #000; } .c-France { background: #ef4444; } .c-Russia { background: #10b981; }
-        .c-Ancient { background: #64748b; } .c-India { background: #f97316; } .c-Japan { background: #be185d; }
-        .c-Denmark { background: #06b6d4; } .c-Austria { background: #ec4899; } .c-Spain { background: #ea580c; }
-        .c-Finland { background: #6366f1; } .c-Switzerland { background: #94a3b8; } .c-Mexico { background: #16a34a; }
-        .c-Italy { background: #0ea5e9; }
+        /* Discovery Nation Colors */
+        .c-UK { background: #2563eb; color: white; } .c-USA { background: #8b5cf6; color: white; } 
+        .c-Germany { background: #f59e0b; color: black; } .c-Sweden { background: #eab308; color: black; } 
+        .c-France { background: #ef4444; color: white; } .c-Russia { background: #10b981; color: white; }
+        .c-Ancient { background: #64748b; color: white; } .c-India { background: #f97316; color: white; } 
+        .c-Japan { background: #be185d; color: white; } .c-Denmark { background: #06b6d4; color: black; } 
+        .c-Austria { background: #d946ef; color: white; } .c-Spain { background: #ea580c; color: white; }
+        .c-Finland { background: #6366f1; color: white; } .c-Switzerland { background: #a1a1aa; color: black; } 
+        .c-Mexico { background: #16a34a; color: white; } .c-Italy { background: #0ea5e9; color: black; }
 
-        .view-gender .g-male { background: #1e40af; }
-        .view-gender .g-female { background: #ec4899; box-shadow: 0 0 12px rgba(236, 72, 153, 0.5); z-index: 2; }
-        .view-gender .g-team { background: #14b8a6; }
-        .view-gender .g-ancient { background: #475569; }
+        .view-gender .g-male { background: #1e40af; color: white; }
+        .view-gender .g-female { background: #ec4899; color: white; box-shadow: 0 0 12px rgba(236, 72, 153, 0.5); z-index: 2; }
+        .view-gender .g-team { background: #14b8a6; color: white; }
+        .view-gender .g-ancient { background: #475569; color: white; }
 
         .future-element { opacity: 0.05 !important; filter: grayscale(1) blur(1px); pointer-events: none; }
+        
         #tooltip { position: fixed; background: #fff; color: #000; padding: 12px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 20px 25px rgba(0,0,0,0.5); width: 220px; font-size: 0.8rem; pointer-events: none; }
+        #tooltip hr { border: 0; border-top: 1px solid #eee; margin: 8px 0; }
+        #tooltip b { color: var(--accent); }
     </style>
 </head>
 <body class="view-nation">
@@ -81,16 +86,17 @@
     </div>
     
     <div id="legend-container">
-        <div id="nation-legend-items" style="display:contents"></div>
-        <div id="gender-legend-items" style="display:contents"></div>
-        <div id="state-legend-items" style="display:contents">
+        <!-- Legend items will be pre-populated alphabetically -->
+        <div id="nation-legend" style="display:contents"></div>
+        <div id="gender-legend" style="display:contents"></div>
+        <div id="state-legend" style="display:contents">
              <div id="leg-state-solid" class="leg-item"><div class="dot" style="background:#475569"></div>Solid</div>
              <div id="leg-state-liquid" class="leg-item"><div class="dot" style="background:#10b981"></div>Liquid</div>
              <div id="leg-state-gas" class="leg-item"><div class="dot" style="background:#f59e0b"></div>Gas</div>
              <div id="leg-state-unknown" class="leg-item"><div class="dot" style="border:1px dashed #444; background:#1e293b"></div>Unknown</div>
         </div>
         <div id="abundance-legend" class="leg-item">
-            <span>Rare</span><div style="width:100px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Abundant</span>
+            <span>Rare (Trace)</span><div style="width:100px; height:10px; background:linear-gradient(to right, #1e293b, #3b82f6, #fde047); border-radius:5px;"></div><span>Common (O/Si)</span>
         </div>
     </div>
 </div>
@@ -102,11 +108,11 @@
     let elements = [];
     let currentView = 'nation';
     let currentYear = 2024;
-    let currentTemp = 293; // Default 20°C (Room Temp)
+    let currentTemp = 293;
 
-    const nationColors = { "UK":"#2563eb", "USA":"#8b5cf6", "Germany":"#f59e0b", "Sweden":"#eab308", "France":"#ef4444", "Russia":"#10b981", "Ancient":"#64748b", "India":"#f97316", "Japan":"#be185d", "Denmark":"#06b6d4", "Austria":"#ec4899", "Spain":"#ea580c", "Finland":"#6366f1", "Switzerland":"#94a3b8", "Mexico":"#16a34a", "Italy":"#0ea5e9" };
-    const genderLabels = { "male": "Male", "female": "Female", "team": "Team", "ancient": "Pre-History" };
-    const genderColors = { "male": "#1e40af", "female": "#ec4899", "team": "#14b8a6", "ancient": "#475569" };
+    const nationColors = { "Ancient":"#64748b", "Austria":"#d946ef", "Denmark":"#06b6d4", "Finland":"#6366f1", "France":"#ef4444", "Germany":"#f59e0b", "India":"#f97316", "Italy":"#0ea5e9", "Japan":"#be185d", "Mexico":"#16a34a", "Russia":"#10b981", "Spain":"#ea580c", "Sweden":"#eab308", "Switzerland":"#a1a1aa", "UK":"#2563eb", "USA":"#8b5cf6" };
+    const genderLabels = { "ancient": "Pre-History", "female": "Female Discoverer", "male": "Male Discoverer", "team": "Research Team" };
+    const genderColors = { "ancient": "#475569", "female": "#ec4899", "male": "#1e40af", "team": "#14b8a6" };
 
     async function loadData() {
         const response = await fetch('./data.json');
@@ -117,20 +123,21 @@
     }
 
     function setupLegends() {
-        const nBox = document.getElementById('nation-legend-items');
-        Object.entries(nationColors).forEach(([n, color]) => {
+        const nBox = document.getElementById('nation-legend');
+        Object.keys(nationColors).sort().forEach(n => {
             const div = document.createElement('div');
-            div.className = 'leg-item leg-nation-node';
-            div.id = `leg-nation-${n}`;
-            div.innerHTML = `<div class="dot" style="background:${color}"></div>${n}`;
+            div.className = 'leg-item leg-n';
+            div.id = `leg-n-${n}`;
+            div.innerHTML = `<div class="dot" style="background:${nationColors[n]}"></div>${n}`;
             nBox.appendChild(div);
         });
-        const gBox = document.getElementById('gender-legend-items');
-        Object.entries(genderLabels).forEach(([key, label]) => {
+
+        const gBox = document.getElementById('gender-legend');
+        Object.keys(genderLabels).sort().forEach(g => {
             const div = document.createElement('div');
-            div.className = 'leg-item leg-gender-node';
-            div.id = `leg-gender-${key}`;
-            div.innerHTML = `<div class="dot" style="background:${genderColors[key]}"></div>${label}`;
+            div.className = 'leg-item leg-g';
+            div.id = `leg-g-${g}`;
+            div.innerHTML = `<div class="dot" style="background:${genderColors[g]}"></div>${genderLabels[g]}`;
             gBox.appendChild(div);
         });
     }
@@ -145,48 +152,54 @@
             div.style.gridRow = el.y;
             div.innerHTML = `<span class="num">${el.number}</span><span class="sym">${el.symbol}</span><span class="name">${el.name}</span>`;
             
-            div.onmouseover = (e) => {
-                const tt = document.getElementById('tooltip');
-                tt.style.display = 'block';
-                const c = (currentTemp - 273.15).toFixed(1);
-                tt.innerHTML = `
-                    <div style="font-weight:800; border-bottom:1px solid #ddd; margin-bottom:5px;">${el.name} (${el.symbol})</div>
-                    <b>State at ${currentTemp}K:</b> ${getStateLabel(el)}<br>
-                    <b>Melting Point:</b> ${el.melting || 'Unknown'} K<br>
-                    <b>Boiling Point:</b> ${el.boiling || 'Unknown'} K<br>
-                    <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
-                    <small>Discovered ${el.year < 0 ? 'Ancient' : el.year} by ${el.nation}</small>
-                `;
-            };
+            div.onmouseover = (e) => showTooltip(el, e);
             div.onmousemove = (e) => {
-                const tt = document.getElementById('tooltip');
-                tt.style.left = (e.clientX + 15) + 'px';
-                tt.style.top = (e.clientY + 15) + 'px';
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
             };
-            div.onmouseout = () => document.getElementById('tooltip').style.display = 'none';
+            div.onmouseout = () => tooltip.style.display = 'none';
             container.appendChild(div);
         });
     }
 
-    function getStateLabel(el) {
-        if (!el.melting) return "Unknown";
-        if (currentTemp < el.melting) return "Solid";
-        if (!el.boiling || currentTemp < el.boiling) return "Liquid";
-        return "Gas";
+    function showTooltip(el, e) {
+        const tt = document.getElementById('tooltip');
+        tt.style.display = 'block';
+        let content = `<div style="font-weight:800; font-size:1rem;">${el.name} (${el.symbol})</div><hr>`;
+        
+        if (currentView === 'nation') {
+            content += `Nation: <b>${el.nation}</b><br>Discoverer: <b>${el.discoverer}</b><br>Year: <b>${el.year < 0 ? 'Ancient' : el.year}</b>`;
+        } else if (currentView === 'gender') {
+            content += `Category: <b>${genderLabels[el.gender]}</b><br>Discoverer: <b>${el.discoverer}</b>`;
+        } else if (currentView === 'abundance') {
+            content += `Abundance: <b>${el.abundance} ppm</b><br><small>Relative to Earth's Crust</small>`;
+        } else if (currentView === 'state') {
+            const state = getState(el);
+            content += `State at ${currentTemp}K: <b style="text-transform:uppercase">${state}</b><hr>`;
+            content += `Melting Point: <b>${el.melting || 'Unknown'} K</b><br>Boiling Point: <b>${el.boiling || 'Unknown'} K</b>`;
+        }
+        
+        tt.innerHTML = content;
+    }
+
+    function getState(el) {
+        if (!el.melting) return "unknown";
+        if (currentTemp < el.melting) return "solid";
+        if (!el.boiling || currentTemp < el.boiling) return "liquid";
+        return "gas";
     }
 
     function changeView(view) {
         currentView = view;
         document.body.className = `view-${view}`;
         const slider = document.getElementById('main-slider');
-        const label = document.getElementById('slider-label-text');
         
         if (view === 'state') {
             slider.min = 0; slider.max = 6000; slider.value = currentTemp;
             updateSliderLabel(currentTemp);
         } else {
             slider.min = 1200; slider.max = 2024; slider.value = currentYear;
-            label.innerHTML = `Year: <span id="val-display" style="color:var(--accent)">${currentYear}</span>`;
+            document.getElementById('slider-label-text').innerHTML = `Year: <span id="val-display" style="color:var(--accent)">${currentYear}</span>`;
         }
 
         document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
@@ -211,39 +224,46 @@
     }
 
     function refreshUI() {
-        const activeNations = new Set();
-        const activeGenders = new Set();
+        const presentNations = new Set();
+        const presentGenders = new Set();
+        const presentStates = new Set();
 
         elements.forEach(el => {
             const domEl = document.getElementById(`el-${el.number}`);
             const isVisible = el.year <= currentYear;
-            
             domEl.classList.toggle('future-element', !isVisible);
-            if (isVisible) {
-                activeNations.add(el.nation);
-                activeGenders.add(el.gender);
-            }
 
+            // Clean previous states
             domEl.classList.remove('state-solid', 'state-liquid', 'state-gas', 'state-unknown');
+            domEl.style.backgroundColor = ''; domEl.style.color = '';
 
-            if (currentView === 'state') {
-                if (!el.melting) domEl.classList.add('state-unknown');
-                else if (currentTemp < el.melting) domEl.classList.add('state-solid');
-                else if (!el.boiling || currentTemp < el.boiling) domEl.classList.add('state-liquid');
-                else domEl.classList.add('state-gas');
-            } else if (currentView === 'abundance') {
-                const logVal = el.abundance > 0 ? Math.log10(el.abundance) : -5;
-                const norm = (logVal + 5) / 11;
-                domEl.style.backgroundColor = `hsl(210, 100%, ${isVisible ? (15 + norm * 75) : 10}%)`;
-            } else {
-                domEl.style.backgroundColor = '';
+            if (isVisible) {
+                presentNations.add(el.nation);
+                presentGenders.add(el.gender);
+                
+                if (currentView === 'state') {
+                    const state = getState(el);
+                    domEl.classList.add('state-' + state);
+                    presentStates.add(state);
+                } else if (currentView === 'abundance') {
+                    const logVal = el.abundance > 0 ? Math.log10(el.abundance) : -5;
+                    const norm = (logVal + 5) / 11;
+                    const lightness = 15 + norm * 75;
+                    domEl.style.backgroundColor = `hsl(210, 100%, ${lightness}%)`;
+                    domEl.style.color = lightness > 60 ? 'black' : 'white';
+                }
             }
         });
 
-        // Legend Visibility
-        document.querySelectorAll('.leg-nation-node').forEach(n => n.classList.toggle('visible', currentView === 'nation' && activeNations.has(n.id.replace('leg-nation-',''))));
-        document.querySelectorAll('.leg-gender-node').forEach(n => n.classList.toggle('visible', currentView === 'gender' && activeGenders.has(n.id.replace('leg-gender-',''))));
-        document.querySelectorAll('#state-legend-items .leg-item').forEach(n => n.classList.toggle('visible', currentView === 'state'));
+        // Toggle Legend Visibility based on board presence
+        document.querySelectorAll('.leg-n').forEach(n => n.classList.toggle('visible', currentView === 'nation' && presentNations.has(n.id.replace('leg-n-',''))));
+        document.querySelectorAll('.leg-g').forEach(n => n.classList.toggle('visible', currentView === 'gender' && presentGenders.has(n.id.replace('leg-g-',''))));
+        
+        document.getElementById('leg-state-solid').classList.toggle('visible', currentView === 'state' && presentStates.has('solid'));
+        document.getElementById('leg-state-liquid').classList.toggle('visible', currentView === 'state' && presentStates.has('liquid'));
+        document.getElementById('leg-state-gas').classList.toggle('visible', currentView === 'state' && presentStates.has('gas'));
+        document.getElementById('leg-state-unknown').classList.toggle('visible', currentView === 'state' && presentStates.has('unknown'));
+        
         document.getElementById('abundance-legend').classList.toggle('visible', currentView === 'abundance');
     }
 
